@@ -6,9 +6,9 @@ from error_handlers import InvalidUsage
 
 app = Flask(__name__)
 
-# Create a new delivery_address object and put into Datastore
+# Create a new delivery_address paramater for the user object and put into Datastore
 # Update_delivery_address should be done using the same function
-@app.route('/delivery_address/create/user_id=<user_id>', methods=['POST'])
+@app.route('/delivery_address/create/user_id=<int:user_id>', methods=['POST'])
 def create_delivery_address(user_id):
 	json_data 		= request.get_json()
 	address_line_1 	= json_data.get('address_line_1','')
@@ -44,8 +44,8 @@ def create_delivery_address(user_id):
 
 
 
-# Delete a delivery address from Datastore
-@app.route('/delivery_address/delete/user_id=<user_id>', methods=['DELETE'])
+# Delete a delivery address from a user object in Datastore
+@app.route('/delivery_address/delete/user_id=<int:user_id>', methods=['DELETE'])
 def delete_delivery_address(user_id):
 	u = User.get_by_id(user_id)
 	if u is None:
@@ -55,6 +55,27 @@ def delete_delivery_address(user_id):
 	u.put()
 
 	return "User home address successfully deleted.", 200
+
+
+
+
+# Get a user's home address
+@app.route('/delivery_address/get/user_id=<int:user_id>', methods=['GET'])
+def get_user_home_address(user_id):
+	# Check to make sure the User exists
+	u = User.get_by_id(user_id)
+	if u is None:
+		raise InvalidUsage('User ID does not match any existing user', 400)
+
+	# Fetch home address data
+	data = {'address_line_1':u.home_address.address_line_1, 'address_line_2':u.home_address.address_line_2,
+			'city':u.home_address.city, 'state':u.home_address.state, 'zip_code':u.home_address.zip_code, 
+			'country':u.home_address.country, 'geo_point':u.home_address.geo_point}
+
+	# Return response
+	resp = jsonify({'address_data':data})
+	resp.status_code = 200
+	return resp
 
 
 
