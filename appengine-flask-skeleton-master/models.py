@@ -5,8 +5,8 @@ class Delivery_Address(ndb.Model):
 	address_line_2 	= ndb.StringProperty(indexed=False)
 	city 			= ndb.StringProperty(indexed=False)
 	state 			= ndb.StringProperty(indexed=False)
-	country 		= ndb.StringProperty(indexed=False)
 	zip_code 		= ndb.StringProperty(indexed=False)
+	country 		= ndb.StringProperty(indexed=False)
 	geo_point 		= ndb.GeoPtProperty(indexed=False)
 
 class User(ndb.Model):
