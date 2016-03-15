@@ -8,54 +8,64 @@ from google.appengine.ext import ndb
 # 	weight				= ndb.FloatProperty(required=True)
 
 class Tag(ndb.Model):
-	name 				= ndb.StringProperty(required=True)
+	name 				= ndb.StringProperty(required=True, indexed=True)
+	disribution_cost 	= ndb.FloatProperty(required=True, indexed=False)
+	total_value 		= ndb.FloatProperty(indexed=False)
+	daily_rate 			= ndb.FloatProperty(indexed=False)
+	weekly_rate			= ndb.FloatProperty(indexed=False)
+	semester_rate 		= ndb.FloatProperty(indexed=False)
+
 
 class User(ndb.Model):
-	first_name 												= ndb.StringProperty(required=True)
-	last_name 												= ndb.StringProperty(required=True)
-	notification_tokens										= ndb.StringProperty(repeated=True)
-	phone_number 											= ndb.StringProperty()
-	is_phone_number_verified 								= ndb.BooleanProperty(default=False)
+	first_name 												= ndb.StringProperty(required=True, indexed=False)
+	last_name 												= ndb.StringProperty(required=True, indexed=False)
+	notification_tokens										= ndb.StringProperty(repeated=True, indexed=False)
+	phone_number 											= ndb.StringProperty(indexed=True)
+	is_phone_number_verified 								= ndb.BooleanProperty(default=False, indexed=False)
 	email 													= ndb.StringProperty(required=True)
-	is_email_verified 										= ndb.BooleanProperty(default=False)
-	password 												= ndb.StringProperty()
-	facebook_id												= ndb.StringProperty()
-	signup_method 											= ndb.StringProperty(required=True, choices=['Facebook', 'Email', 'Phone Number'])
-	credit 													= ndb.FloatProperty(default=0.0) # How much money the user owes at the end of the week
-	debit 													= ndb.FloatProperty(default=0.0) # How much money the user has credited to their account (i.e. $15 from signing up or promotions)
-	date_created 											= ndb.DateTimeProperty(auto_now_add=True)
-	date_last_modified 										= ndb.DateTimeProperty(auto_now=True)
-	status													= ndb.StringProperty(default='Active', choices=['Active', 'Inactive', 'Deactivated'])
-	# last_known_location										= ndb.GeoPtProperty()
+	is_email_verified 										= ndb.BooleanProperty(default=False, indexed=False)
+	password 												= ndb.StringProperty(indexed=True)
+	facebook_id												= ndb.StringProperty(indexed=True)
+	signup_method 											= ndb.StringProperty(required=True, choices=['Facebook', 'Phone Number'], indexed=False)
+	credit 													= ndb.FloatProperty(default=0.0, indexed=False) # How much money the user owes at the end of the week
+	debit 													= ndb.FloatProperty(default=0.0, indexed=False) # How much money the user has credited to their account (i.e. $15 from signing up or promotions)
+	status													= ndb.StringProperty(default='Active', choices=['Active', 'Inactive', 'Deactivated'], indexed=False)
 	profile_picture_path									= ndb.StringProperty()
-	# category_weights										= ndb.StructuredProperty(CategoryWeight, repeated=True)
-	# TODO: Other required fields?
+
+
+class Delivery_Address(ndb.Model):
+	user 			= ndb.KeyProperty(required=True, kind=User)
+	address_line_1 	= ndb.StringProperty(required=True, indexed=False)
+	adderss_line_2 	= ndb.StringProperty(indexed=False)
+	city 			= ndb.StringProperty(indexed=False)
+	state 			= ndb.StringProperty(indexed=False)
+	country 		= ndb.StringProperty(indexed=False)
+	zip_code 		= ndb.StringProperty(indexed=False)
+	geo_point 		= ndb.GeoPtProperty(indexed=False)
+
 
 class Verification(ndb.Model):
-	account													= ndb.KeyProperty(required=True, kind=User)
-	phone_number_verification_code 							= ndb.IntegerProperty()
-	email_verification_code 								= ndb.IntegerProperty()
-	verification_code_distribution_datetime 				= ndb.DateTimeProperty(auto_now_add=True)
+	user									= ndb.KeyProperty(required=True, kind=User)
+	phone_number_verification_code 			= ndb.IntegerProperty()
+	email_verification_code 				= ndb.IntegerProperty()
+	verification_code_distribution_datetime = ndb.DateTimeProperty(auto_now_add=True)
+
 
 class Listing(ndb.Model):
 	owner 				= ndb.KeyProperty(required=True, kind=User)
 	renter 				= ndb.KeyProperty(kind=User)
+	tag 				= ndb.KeyProperty(kind=Tag)
 	status 				= ndb.StringProperty(required=True, choices=['Available', 'Reserved', 'Rented', 'Unavailable', 'Damaged', 'Unlisted', 'Deactivated', 'Deleted'])
-	name 				= ndb.StringProperty(required=True)
 	item_description 	= ndb.StringProperty()
 	rating		 		= ndb.FloatProperty()	# Value of -1 is used to signal no rating
-	total_value 		= ndb.FloatProperty(required=True)
-	hourly_rate 		= ndb.FloatProperty(required=True)
-	daily_rate 			= ndb.FloatProperty(required=True)
-	weekly_rate			= ndb.FloatProperty(required=True)
-	# category 			= ndb.KeyProperty(required=True, kind=Category)
-	date_created		= ndb.DateTimeProperty(auto_now_add=True)
-	date_last_modified 	= ndb.DateTimeProperty(auto_now=True)
-	location			= ndb.GeoPtProperty(required=True)
-	# location_lat		= ndb.FloatProperty(required=True)
-	# location_lon		= ndb.FloatProperty(required=True)
-	# TODO: More required fields like images, listed date, item location, user-selected related items, totalReturns, etc.
 
+class Request(ndb.Model):
+	user 		= ndb.KeyProperty(required=True, kind=User)
+	tag 		= ndb.KeyProperty(required=True, kind=Tag)
+	geo_point 	= ndb.GeoPtProperty(indexed=False)
+
+
+'''
 class Meeting_Location(ndb.Model):
 	user 				= ndb.KeyProperty(required=True, kind=User)
 	google_places_id 	= ndb.StringProperty(required=True)
@@ -84,24 +94,16 @@ class Meeting_Event(ndb.Model):
 	# FIXME: Are these necessary? 
 	owner_confirmation_time 	= ndb.DateTimeProperty()	# Moment that the Owner confirms the Handoff
 	renter_confirmation_time 	= ndb.DateTimeProperty()	# Moment that the Renter confirms the Handoff
+
+'''
 	
 class Rent_Event(ndb.Model):
-	owner 						= ndb.KeyProperty(required=True, kind=User)
 	renter 						= ndb.KeyProperty(required=True, kind=User)
 	listing 					= ndb.KeyProperty(required=True, kind=Listing)
 	rental_rate 				= ndb.FloatProperty()
-	rental_time 				= ndb.IntegerProperty()
-	rental_time_frame 			= ndb.StringProperty(choices=['Hourly', 'Daily', 'Weekly'])
-	message 					= ndb.StringProperty()
+	rental_duration 			= ndb.IntegerProperty()
+	rental_timeframe 			= ndb.StringProperty(choices=['Hourly', 'Daily', 'Weekly'])
 	status 						= ndb.StringProperty(required=True, choices=['Inquired', 'Proposed', 'Scheduled Start', 'Ongoing', 'Scheduled End', 'Canceled', 'Rejected', 'Concluded'])
-	# proposed_by 				= ndb.StringProperty(choices=['Renter', 'Owner']) 	# If the Renter proposes, think of this as a Rent Request. If the Owner proposes, the Renter is 'pre-approved' to Rent
-	start_meeting_event 		= ndb.KeyProperty(kind=Meeting_Event)
-	end_meeting_event 			= ndb.KeyProperty(kind=Meeting_Event)
-	date_created 				= ndb.DateTimeProperty(auto_now_add=True)
-	date_responded				= ndb.DateTimeProperty() # How long it takes for the Owner to respond to the request
-	date_ended					= ndb.DateTimeProperty() # How long it takes to go from creation to Canceled/Rejected/Concluded
-
-
 
 
 	

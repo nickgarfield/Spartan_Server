@@ -39,29 +39,8 @@ handlers:
 - url: /meeting_event/.*
   script: meeting_event.app
 
-# - url: /delete/.*
-#   script: delete.app
-
-# - url: /consistency_check/.*
-#   script: consistency_check.app
-
-# - url: /login/.*
-#   script: login.app
-
-# - url: /phone_number_verification/.*
-#   script: phone_number_verification.app
-
-# - url: /email_verification/.*
-#   script: email_verification.app
-
-# - url: /pricing/.*
-#   script: pricing.app
-
 - url: /advertised_listings/.*
   script: advertised_listings.app
-
-# - url: /braintree/.*
-#   script: braintree.app
 
 - url: /.*  # This regex directs all routes to main.app
   script: main.app

@@ -11,63 +11,60 @@ app = Flask(__name__)
 
 
 # Create a new listing object and put into Datastore and Search App
-@app.route('/listing/create/user_id=<int:user_id>', methods=['POST'])
-def create_new_listing(user_id):
+@app.route('/listing/create', methods=['POST'])
+def create_listing(user_id):
 	json_data 			= request.get_json()
-	name 				= json_data.get('name','')
-	item_description 	= json_data.get('item_description','')
-	total_value			= float(json_data.get('total_value',''))
-	# location_lat 		= float(json_data.get('location_lat',''))
-	# location_lon		= float(json_data.get('location_lon',''))
-
+	user_id 			= json_data.get('user_id','')
+	tag_id 				= json_data.get('tag_id', '')
 
 	# Check to see if the user exists
-	u = User.get_by_id(user_id)
-	if u is None:
+	user = User.get_by_id(int(user_id))
+	if user is None:
 		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+	user_key = ndb.Key('User', int(user_id))
 
-	u_key = ndb.Key('User', user_id)
+	# Check to see if the tag exists
+	tag = Tag.get_by_id(int(tag_id))
+	if tag is None:
+		raise InvalidUsage('TagID does not match any existing tag', status_code=400)
+	tag_key = ndb.Key('Tag', int(tag_id))
 
-	# if total_value > MAX_ITEM_VALUE:
-	# 	raise InvalidUsage('Total value is too large', status_code=400)
-
+	# Set default listing data
 	status = 'Available'
 	rating = -1.0
-	location = ndb.GeoPt(40.112814,-88.231786)
-
-	# INSERT FUNCTION TO CALCULATE RENTAL RATES HERE
 
 	# Add listing to Datastore
-	l = Listing(owner=u_key, status=status, name=name, item_description=item_description, 
-				rating=rating, total_value=total_value, hourly_rate=hourly_rate, daily_rate=daily_rate, 
-				weekly_rate=weekly_rate, location=location)
+	l = Listing(owner=user_key, tag=tag_key, status=status, rating=rating)
+
 	try:
 		listing_key = l.put()
 		listing_id	= str(listing_key.id())
 	except:
 		abort(500)
 
-	# Add listing to Search App
-	new_item = search.Document(
-		doc_id=listing_id,
-		fields=[search.TextField(name='name', value=name),
-				search.GeoField(name='location', value=search.GeoPoint(location.lat,location.lon)),
-				search.TextField(name='owner_id', value=str(user_id))])
-	try:
-		index = search.Index(name='Listing')
-		index.put(new_item)
-	except:
-		abort(500)
+	# TODO: Add listing to Search App
+	# TODO: Get location based on user's current delivery address
+	# new_item = search.Document(
+	# 	doc_id=listing_id,
+	# 	fields=[search.TextField(name='name', value=name),
+	# 			search.GeoField(name='location', value=search.GeoPoint(location.lat,location.lon)),
+	# 			search.TextField(name='owner_id', value=str(user_id))])
 
-	
-	data = {'listing_id':listing_id, 'date_created':l.date_created, 'date_last_modified':l.date_last_modified, 'status':status}
+	# try:
+	# 	index = search.Index(name='Listing')
+	# 	index.put(new_item)
+	# except:
+	# 	abort(500)
+
+	# Return the new Listing data
+	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'tag_id':tag_id, 'status':status, 'item_description':None, 'rating':rating}
 	resp = jsonify(data)
 	resp.status_code = 201
 	return resp
 
 
 
-
+'''
 @app.route('/listing/suggested_rates/total_value=<float:total_value>', methods=['GET'])
 def pricing_suggested_rates(total_value):
 	half_value = 0.5 * total_value
@@ -85,7 +82,7 @@ def pricing_suggested_rates(total_value):
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
-
+'''
 
 
 
@@ -93,11 +90,10 @@ def pricing_suggested_rates(total_value):
 # Delete listing from Search API and set status to 'Deleted' in Datastore
 @app.route('/listing/delete/listing_id=<int:listing_id>', methods=['DELETE'])
 def delete_listing(listing_id):
-	# Edit Datastore entity
 	# Get the listing
 	l = Listing.get_by_id(listing_id)
 	if l is None:
-		raise InvalidUsage('Listing ID does not match any existing listing.', 400)
+		raise InvalidUsage('Listing ID does not match any existing Listing.', 400)
 
 	# Set listing status to 'Deleted'
 	l.status = 'Deleted'
@@ -108,7 +104,6 @@ def delete_listing(listing_id):
 	except:
 		abort(500)
 
-
 	# Delete Search App entity
 	try:
 		index = search.Index(name='Listing')
@@ -116,12 +111,8 @@ def delete_listing(listing_id):
 	except:
 		abort(500)
 
-
 	# Return response
-	data = {'listing_id deleted':listing_id, 'date_deleted':l.date_last_modified}
-	resp = jsonify(data)
-	resp.status_code = 200
-	return resp
+	return 204
 
 
 
@@ -130,11 +121,6 @@ def delete_listing(listing_id):
 @app.route('/listing/update/listing_id=<int:listing_id>', methods=['POST'])
 def update_listing(listing_id):
 	json_data 		 = request.get_json()
-	name 			 = json_data.get('name','')
-	total_value 	 = float(json_data.get('total_value',''))
-	hourly_rate 	 = float(json_data.get('hourly_rate',''))
-	daily_rate 		 = float(json_data.get('daily_rate',''))
-	weekly_rate		 = float(json_data.get('weekly_rate',''))
 	status 			 = json_data.get('status','')
 	item_description = json_data.get('item_description','')
 
@@ -144,11 +130,6 @@ def update_listing(listing_id):
 		raise InvalidUsage('ItemID does not match any existing item', status_code=400)
 
 	# Update the item attributes
-	l.name 				= name
-	l.total_value 		= total_value
-	l.hourly_rate		= hourly_rate
-	l.daily_rate 		= daily_rate
-	l.weekly_rate		= weekly_rate
 	l.item_description 	= item_description
 	l.status 			= status
 
@@ -159,27 +140,28 @@ def update_listing(listing_id):
 		abort(500)
 
 	# Add the updated item to the Search API
-	if l.status == 'Available':
-		updated_item = search.Document(
-				doc_id=str(listing_id),
-				fields=[search.TextField(name='name', value=name),
-						search.GeoField(name='location', value=search.GeoPoint(l.location.lat,l.location.lon)),
-						search.TextField(name='owner_id', value=str(l.owner.id()))])
+	# if l.status == 'Available':
+	# 	updated_item = search.Document(
+	# 			doc_id=str(listing_id),
+	# 			fields=[search.TextField(name='name', value=name),
+	# 					search.GeoField(name='location', value=search.GeoPoint(l.location.lat,l.location.lon)),
+	# 					search.TextField(name='owner_id', value=str(l.owner.id()))])
 
-		try:
-			index = search.Index(name='Listing')
-			index.put(updated_item)
-		except:
-			abort(500)
-	else:
-		try:
-			index = search.Index(name='Listing')
-			index.delete(str(listing_id))
-		except:
-			abort(500)
+	# 	try:
+	# 		index = search.Index(name='Listing')
+	# 		index.put(updated_item)
+	# 	except:
+	# 		abort(500)
+	# else:
+	# 	try:
+	# 		index = search.Index(name='Listing')
+	# 		index.delete(str(listing_id))
+	# 	except:
+	# 		abort(500)
+
 
 	# Return the attributes of the new item
-	data = {'name':name, 'total_value':total_value, 'hourly_rate':hourly_rate, 'daily_rate':daily_rate, 'weekly_rate':weekly_rate, 'status':status, 'item_description':item_description}
+	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'tag_id':str(l.tag.id()), 'status':status, 'item_description':item_description, 'rating':l.rating}
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -189,10 +171,8 @@ def update_listing(listing_id):
 
 # Add a listing image
 # MAX_NUM_ITEM_IMAGES = 5
-@app.route('/listing/new_listing_image/listing_id=<int:listing_id>', methods=['POST'])
-def new_listing_image(listing_id):
-	# user_id = request.form['user_id']
-	# listing_id = request.form['listing_id']
+@app.route('/listing/create_listing_image/listing_id=<int:listing_id>', methods=['POST'])
+def create_listing_image(listing_id):
 	userfile = request.files['userfile']
 	filename = userfile.filename
 
@@ -225,7 +205,6 @@ def new_listing_image(listing_id):
 
 
 
-
 # Delete a listing image
 @app.route('/listing/delete_listing_image/path=<path:path>', methods=['DELETE'])
 def delete_listing_image(path):
@@ -236,94 +215,83 @@ def delete_listing_image(path):
 	# Delete the image from the given path
 	bucket.delete_blob(path)
 
-	now = datetime.datetime.now()
-
 	# Return response
-	resp = jsonify({'picture_id deleted':path, 'date_deleted':now})
-	resp.status_code = 200
-	return resp
+	return 204
 
 
 
 
 # Get a listing's info
-@app.route('/listing/get_info/listing_id=<int:listing_id>', methods=['GET'])
-def get_listing_info(listing_id):
+@app.route('/listing/listing_id=<int:listing_id>', methods=['GET'])
+def get_listing(listing_id):
+	# Check to make sure the Listing exists
 	l = Listing.get_by_id(listing_id)
 	if l is None:
 		raise InvalidUsage('Listing does not exist!', status_code=400)
 
 	listing_img_media_links = get_listing_images(listing_id)
 
-	# Add function for related items?
-
 	# Return the attributes of the new item
-	listing_data = {'listing_id':l.key.id(), 'name':l.name, 'owner_id':l.owner.id(), 
-					'renter_id':l.renter.id() if l.renter else None,'status':l.status, 
-					'item_description':l.item_description, 'rating':l.rating, 'total_value':l.total_value, 
-					'hourly_rate':l.hourly_rate, 'daily_rate':l.daily_rate, 'weekly_rate':l.weekly_rate, 
-					'date_last_modified':l.date_last_modified,
-					'image_media_links':listing_img_media_links}
+	data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'status':l.status,
+			'item_description':l.item_description, 'rating':l.rating, 'image_media_links':listing_img_media_links}
 
-	resp = jsonify(listing_data)
+	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
 
 
 
 # Get a user's listings
-@app.route('/listing/get_listings/user_id=<int:user_id>', methods=['GET'])
-def get_user_listings(user_id):
+@app.route('/listing/get_users_listings/user_id=<int:user_id>', methods=['GET'])
+def get_users_listings(user_id):
+	# Check to make sure the User exists
 	u = User.get_by_id(user_id)
 	if u is None:
 		raise InvalidUsage('User ID does not match any existing user', 400)
 
+	# Fetch Listings
 	u_key	= ndb.Key('User', user_id)
 	qry 	= Listing.query(Listing.owner == u_key)
 	listings = qry.fetch()
 
+	# Parse data
 	data = []
 	for l in listings:
-		listing_data = {'listing_id':l.key.id(), 'name':l.name, 'owner_id':l.owner.id(), 
-						'renter_id':l.renter.id() if l.renter else None,'status':l.status, 
-						'item_description':l.item_description, 'rating':l.rating, 'total_value':l.total_value, 
-						'hourly_rate':l.hourly_rate, 'daily_rate':l.daily_rate, 'weekly_rate':l.weekly_rate, 
-						'date_last_modified':l.date_last_modified,
-						'image_media_links':get_listing_images(l.key.id())}
+		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'status':l.status,
+			'item_description':l.item_description, 'rating':l.rating, 'image_media_links':get_listing_images(l.key.id())}
 		data += [listing_data]
 
-	resp = jsonify({'listings':data})
+	# Return response
+	resp = jsonify({'listings_data':data})
 	resp.status_code = 200
 	return resp
-
 
 
 
 # Get a user's rented listings
-@app.route('/listing/get_rented_listings/user_id=<int:user_id>', methods=['GET'])
-def get_user_rented_listings(user_id):
+@app.route('/listing/get_users_rented_listings/user_id=<int:user_id>', methods=['GET'])
+def get_users_rented_listings(user_id):
+	# Check to make sure User exists
 	u = User.get_by_id(user_id)
 	if u is None:
 		raise InvalidUsage('User ID does not match any existing user', 400)
 
+	# Fetch Listings
 	u_key	= ndb.Key('User', user_id)
 	qry 	= Listing.query(Listing.renter == u_key)
 	listings = qry.fetch()
 
+	# Parse data
 	data = []
 	for l in listings:
-		listing_data = {'listing_id':l.key.id(), 'name':l.name, 'owner_id':l.owner.id(), 
-						'renter_id':l.renter.id() if l.renter else None,'status':l.status, 
-						'item_description':l.item_description, 'rating':l.rating, 'total_value':l.total_value, 
-						'hourly_rate':l.hourly_rate, 'daily_rate':l.daily_rate, 'weekly_rate':l.weekly_rate, 
-						'date_last_modified':l.date_last_modified,
-						'image_media_links':get_listing_images(l.key.id())}
+		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'status':l.status,
+			'item_description':l.item_description, 'rating':l.rating, 'image_media_links':get_listing_images(l.key.id())}
 		data += [listing_data]
 
-	resp = jsonify({'listings':data})
+	# Return response
+	resp = jsonify({'listings_data':data})
 	resp.status_code = 200
 	return resp
-
 
 
 
@@ -338,8 +306,6 @@ def get_listing_images(listing_id):
 		listing_img_media_links += [img_object.media_link]
 
 	return listing_img_media_links
-
-
 
 
 
