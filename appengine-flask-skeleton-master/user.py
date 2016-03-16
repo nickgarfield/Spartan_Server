@@ -1,5 +1,4 @@
 from flask import Flask,request,json,jsonify,Response,abort
-import datetime, time
 import global_vars
 from google.appengine.ext import ndb
 from google.appengine.api import search
@@ -69,12 +68,13 @@ def create_user():
 		abort(500)
 
 
-	data = {'user_id':str(user_id), 'first_name':first_name, 'last_name':last_name, 'phone_number':phone_number, 'is_phone_number_verified':False, 'email':email, 'is_email_verified':False, 'password':password, 'facebook_id':facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'is_phone_number_verified':u.is_phone_number_verified, 
+			'email':u.email, 'is_email_verified':u.is_email_verified, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status}
 	resp = jsonify(data)
 	resp.status_code = 201
 	return resp
-
-
 
 
 # Delete a user object from Search API and set User status to 'Deactivated'
@@ -117,7 +117,7 @@ def deactivate_user(user_id):# Edit Datastore entity
 		abort(500)
 
 	# Return response
-	return 204
+	return 'User successfully deactivated.', 200
 
 
 
@@ -130,7 +130,7 @@ def delete_from_search(user_id):
 	except:
 		abort(500)
 
-	return 200
+	return 'User successfully deleted from Search API.', 200
 
 
 
@@ -151,11 +151,6 @@ def reactivate_user(user_id):
 	u.is_phone_number_verified = False
 	u.is_email_verified = False
 	
-	first_name			= u.first_name 
-	last_name			= u.last_name
-	email				= u.email
-	phone_number		= u.phone_number 
-	date_created		= u.date_created
 
 	# Add the updated user status to the Datastore
 	try:
@@ -167,19 +162,21 @@ def reactivate_user(user_id):
 	# Add reactivated user to the Search App
 	reactivated_user = search.Document(
 			doc_id=str(user_id),
-			fields=[search.TextField(name='name', value=first_name+' '+last_name),
-					search.TextField(name='phone_number', value=phone_number),
-					search.TextField(name='email', value=email)])
+			fields=[search.TextField(name='name', value=u.first_name+' '+u.last_name),
+					search.TextField(name='phone_number', value=u.phone_number),
+					search.TextField(name='email', value=u.email)])
 	try:
 		index = search.Index(name='User')
 		index.put(reactivated_user)
 	except:
 		abort(500)
 
-
-	data = {'user_id':str(user_id), 'first_name':first_name, 'last_name':last_name, 'phone_number':phone_number, 'is_phone_number_verified':False, 'email':email, 'is_email_verified':False, 'password':password, 'facebook_id':facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'is_phone_number_verified':u.is_phone_number_verified, 
+			'email':u.email, 'is_email_verified':u.is_email_verified, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status}
 	resp = jsonify(data)
-	resp.status_code = 201
+	resp.status_code = 200
 	return resp
 
 
@@ -246,8 +243,10 @@ def update_user(user_id):
 	except:
 		abort(500)
 
-	# Return the fields of the new user
-	data = {'user_id':str(user_id), 'first_name':first_name, 'last_name':last_name, 'phone_number':phone_number, 'is_phone_number_verified':False, 'email':email, 'is_email_verified':False, 'password':password, 'facebook_id':facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'is_phone_number_verified':u.is_phone_number_verified, 
+			'email':u.email, 'is_email_verified':u.is_email_verified, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status}
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -287,7 +286,7 @@ def create_user_image(user_id):
 	u.profile_picture_path = path
 	u.put()
 
-	resp = jsonify({'image_path':path, 'image_media_link':image.media_link})
+	resp = jsonify({'image_path':u.profile_picture_path, 'image_media_link':image.media_link})
 	resp.status_code = 201
 	return resp
 
@@ -315,52 +314,33 @@ def delete_user_image(user_id):
 	u.profile_picture_path = None
 	u.put()
 
-	now = datetime.datetime.now()
-
-	# Return response
-	resp = jsonify({'picture_id deleted':path, 'date_deleted':now})
-	resp.status_code = 200
-	return resp
+	return 'User profile picture deleted.', 200
 
 
 
 
-# Get a user's public information
+# Get a user's information
 @app.route('/user/user_id=<int:user_id>', methods=['GET'])
 def get_user(user_id):
 	u = User.get_by_id(user_id)
 	if u is None:
 		raise InvalidUsage('User ID does not match any existing user', 400)
 
-	# Get user data from Datastore
-	first_name 			= u.first_name
-	last_name 			= u.last_name
-	phone_number 		= u.phone_number
-	email 				= u.email
-	path 				= u.profile_picture_path
-
-	# Get user's profile picture
-	if path != None:
-		client = storage.Client()
-		bucket = client.get_bucket(global_vars.USER_IMG_BUCKET)
-		user_img = bucket.get_blob(path)
-	else:
-		user_img = None
-	
-	if user_img == None:
-		user_img_media_link = None
-		image_path = None
-	else:
-		user_img_media_link = user_img.media_link
-		image_path = user_img.path
+	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
 	# Return User data
-	data = {'user_id':str(user_id), 'first_name':first_name, 'last_name':last_name, 'phone_number':phone_number, 'is_phone_number_verified':False, 'email':email, 'is_email_verified':False, 'password':password, 'facebook_id':facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status, 'image_path':image_path, 'image_media_link':user_img_media_link}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'is_phone_number_verified':u.is_phone_number_verified, 
+			'email':u.email, 'is_email_verified':u.is_email_verified, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
+			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
 
 
+
+# FIXME: Generally should not be using POST methods unless writing to the database..
 @app.route('/user/login', methods=['POST'])
 def login_user():
 	json_data 			= request.get_json()
@@ -375,39 +355,16 @@ def login_user():
 	# Raise an error if the user's phone number and password do not match
 	if u is None:
 		raise InvalidUsage('Phone number and password do not match', status_code=400)
-		
-	# Grab all the relevant data from the entity
-	user_id 	 			 = u.key.id()
-	first_name 	 			 = u.first_name
-	last_name 	 			 = u.last_name
-	password 	 			 = u.password
-	facebook_id  			 = u.facebook_id
-	phone_number 			 = u.phone_number
-	is_phone_number_verified = u.is_phone_number_verified
-	email 					 = u.email
-	is_email_verified 		 = u.is_email_verified
-	credit 		 			 = u.credit
-	debit 		 			 = u.debit
-	status 					 = u.status
-	path 					 = u.profile_picture_path
 
 	# Get user's profile picture
-	if path != None:
-		client = storage.Client()
-		bucket = client.get_bucket(global_vars.USER_IMG_BUCKET)
-		user_img = bucket.get_blob(path)
-	else:
-		user_img = None
-	
-	if user_img == None:
-		user_img_media_link = None
-		image_path = None
-	else:
-		user_img_media_link = user_img.media_link
-		image_path = user_img.path
+	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
 	# Return the relevant data in JSON format
-	data = {'user_id':str(user_id), 'first_name':first_name, 'last_name':last_name, 'phone_number':phone_number, 'is_phone_number_verified':is_phone_number_verified, 'email':email, 'is_email_verified':is_email_verified, 'password':password, 'facebook_id':facebook_id, 'credit':credit, 'debit':debit, 'status':status, 'image_path':image_path, 'image_media_link':user_img_media_link}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'is_phone_number_verified':u.is_phone_number_verified, 
+			'email':u.email, 'is_email_verified':u.is_email_verified, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
+			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -426,39 +383,15 @@ def login_facebook_user():
 	if u is None:
 		raise InvalidUsage('User with facebookID not found', status_code=400)
 
-	# Grab all the relevant data from the entity
-	user_id 	 			 = u.key.id()
-	first_name 	 			 = u.first_name
-	last_name 	 			 = u.last_name
-	password 	 			 = u.password
-	facebook_id  			 = u.facebook_id
-	phone_number 			 = u.phone_number
-	is_phone_number_verified = u.is_phone_number_verified
-	email 					 = u.email
-	is_email_verified 		 = u.is_email_verified
-	credit 		 			 = u.credit
-	debit 		 			 = u.debit
-	status 					 = u.status
-	path 					 = u.profile_picture_path
-
-
 	# Get user's profile picture
-	if path != None:
-		client = storage.Client()
-		bucket = client.get_bucket(global_vars.USER_IMG_BUCKET)
-		user_img = bucket.get_blob(path)
-	else:
-		user_img = None
-	
-	if user_img == None:
-		user_img_media_link = None
-		image_path = None
-	else:
-		user_img_media_link = user_img.media_link
-		image_path = user_img.path
+	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
 	# Return the relevant data in JSON format
-	data = {'user_id':str(user_id), 'first_name':first_name, 'last_name':last_name, 'phone_number':phone_number, 'is_phone_number_verified':is_phone_number_verified, 'email':email, 'is_email_verified':is_email_verified, 'password':password, 'facebook_id':facebook_id, 'credit':credit, 'debit':debit, 'status':status, 'image_path':image_path, 'image_media_link':user_img_media_link}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'is_phone_number_verified':u.is_phone_number_verified, 
+			'email':u.email, 'is_email_verified':u.is_email_verified, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
+			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -488,6 +421,16 @@ def validate_phone(phone_number):
 			raise InvalidUsage('Phone number is already registered.', status_code=400)
 
 
+# Helper function that returns an image media link from cloudstorage given the path
+def get_img_medialink(path):
+	img_media_link = None
+	if path != None:
+		client = storage.Client()
+		bucket = client.get_bucket(global_vars.USER_IMG_BUCKET)
+		img = bucket.get_blob(path)
+		img_media_link = img.media_link
+		
+	return img_media_link
 
 
 ### Server Error Handlers ###

@@ -25,26 +25,29 @@ curl -H "Content-Type: application/json" -X POST -d @json.txt http://molten-unis
 
 ########### USER FUNCTIONS ##############
 ### Create User
-curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"JJ\", \"last_name\":\"Qi\", \"email\":\"jj@bygo.io\", \"phone_number\":\"9876549878\", \"password\":\"\", \"signup_method\":\"Phone Number\"}" http://molten-unison-112921.appspot.com/user/create
+curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Olivia\", \"last_name\":\"Park\", \"email\":\"olivia@bygo.io\", \"phone_number\":\"7894561230\", \"password\":\"\", \"signup_method\":\"Facebook\", \"facebook_id\":\"111222333\"}" http://molten-unison-112921.appspot.com/user/create
 
 
 ### Deactivate User
-curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5765606242516992
+curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5634387206995968
+
+### Delete User from Search API
+curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_from_search/user_id=5634387206995968
 
 ### Reactivate User
-curl -H "Content-Type: application/json" -X POST -d {} http://molten-unison-112921.appspot.com/user/reactivate/user_id=5752571553644544
+curl -H "Content-Type: application/json" -X POST -d {} http://molten-unison-112921.appspot.com/user/reactivate/user_id=5634387206995968
 
 ### Update User
-curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Sayan\", \"last_name\":\"Roychowdhury\", \"email\":\"sayan@bygo.io\", \"phone_number\":\"7325704976\"}" http://molten-unison-112921.appspot.com/user/update/user_id=5752571553644544
+curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Sayan\", \"last_name\":\"Roychowdhury\", \"email\":\"sayan@bygo.io\", \"phone_number\":\"0123456789\"}" http://molten-unison-112921.appspot.com/user/update/user_id=5634387206995968
 
 ### Add/Update User profile picture
-curl -X POST -F "filename=profile_picture.jpg" -F "userfile=@C:/Users/Sayan/Desktop/10341994_10152165761279163_3623862560801127167_n.jpg" http://molten-unison-112921.appspot.com/user/new_user_image/user_id=5752571553644544
+curl -X POST -F "filename=profile_picture.jpg" -F "userfile=@C:/Users/Sayan/Desktop/rsz_dsc_0780.jpg" http://molten-unison-112921.appspot.com/user/create_user_image/user_id=5634387206995968
 
 ### Delete User Profile Picture
-curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_user_image/path=5752571553644544/profile_picture.jpg
+curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_user_image/path=5752571553644544/user_id=5634387206995968
 
 ### Get User Data (also returns a media link to their profile picture)
-curl http://molten-unison-112921.appspot.com/user/get_info/user_id=5752571553644544
+curl http://molten-unison-112921.appspot.com/user/user_id=5634387206995968
 
 
 
@@ -57,7 +60,7 @@ curl -H "Content-Type: application/json" -X POST -d "{\"category_id\":\"57135732
 curl http://molten-unison-112921.appspot.com/listing/suggested_rates/total_value=95.5
 
 ### Delete Listing
-curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id=5657382461898752
+curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id=5749563331706880
 
 ### Update Listing
 curl -H "Content-Type: application/json" -X POST -d "{\"category_id\":\"5713573250596864\", \"name\":\"Knockoff Headphones\", \"item_description\":\"I AM A LIAR\", \"total_value\":\"75\", \"hourly_rate\":\"7.5\", \"daily_rate\":\"15\", \"weekly_rate\":\"30\", \"status\":\"Unlisted\"}" http://molten-unison-112921.appspot.com/listing/update/listing_id=5749563331706880
