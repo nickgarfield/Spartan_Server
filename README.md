@@ -57,6 +57,8 @@ curl -H "Content-Type: application/json" -X POST -d "{\"address_line_1\":\"502 E
 ### Delete User Home Address
 curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/user_id=5634387206995968
 
+### Get User Home Address
+
 
 
 ########### LISTING FUNCTIONS ##############

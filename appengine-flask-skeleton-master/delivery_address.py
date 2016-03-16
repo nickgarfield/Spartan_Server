@@ -53,7 +53,7 @@ def delete_delivery_address(user_id):
 	if u is None:
 		raise InvalidUsage('UserID does not match any existing user', status_code=400)
 
-	if u.home_address != None:
+	if u.home_address is not None:
 		u.home_address = None
 	else:
 		raise InvalidUsage('No User home address found.', status_code=400)
@@ -72,10 +72,13 @@ def get_user_home_address(user_id):
 	if u is None:
 		raise InvalidUsage('User ID does not match any existing user', 400)
 
-	# Fetch home address data
-	data = {'address_line_1':u.home_address.address_line_1, 'address_line_2':u.home_address.address_line_2,
-			'city':u.home_address.city, 'state':u.home_address.state, 'zip_code':u.home_address.zip_code, 
-			'country':u.home_address.country, 'geo_point':u.home_address.geo_point}
+	if u.home_address is None:
+		data = {'address_line_1':'', 'address_line_2':'','city':'', 'state':'', 'zip_code':'', 
+				'country':''}
+	else:
+		data = {'address_line_1':u.home_address.address_line_1, 'address_line_2':u.home_address.address_line_2,
+				'city':u.home_address.city, 'state':u.home_address.state, 'zip_code':u.home_address.zip_code, 
+				'country':u.home_address.country}
 
 	# Return response
 	resp = jsonify({'address_data':data})
