@@ -44,11 +44,18 @@ curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Sayan\", 
 curl -X POST -F "filename=profile_picture.jpg" -F "userfile=@C:/Users/Sayan/Desktop/rsz_dsc_0780.jpg" http://molten-unison-112921.appspot.com/user/create_user_image/user_id=5634387206995968
 
 ### Delete User Profile Picture
-curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_user_image/path=5752571553644544/user_id=5634387206995968
+curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_user_image/user_id=5634387206995968
 
 ### Get User Data (also returns a media link to their profile picture)
 curl http://molten-unison-112921.appspot.com/user/user_id=5634387206995968
 
+### Create User Home Address
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/new_delivery_address.json http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5634387206995968
+
+curl -H "Content-Type: application/json" -X POST -d "{\"address_line_1\":\"502 East Springfield Ave\", \"address_line_2\":\"Apt 310\", \"city\":\"Champaign\", \"state\":\"IL\", \"zip_code\":\"61820\", \"country\":\"USA\"}" http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5634387206995968
+
+### Delete User Home Address
+curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/user_id=5634387206995968
 
 
 

@@ -1,6 +1,6 @@
 from flask import Flask,request,json,jsonify,Response,abort
 from google.appengine.ext import ndb
-from models import Delivery_Address
+from models import User,Delivery_Address
 from geopy.geocoders import Nominatim
 from error_handlers import InvalidUsage
 
@@ -25,13 +25,15 @@ def create_delivery_address(user_id):
 		raise InvalidUsage('UserID does not match any existing user', status_code=400)
 
 	# Get latitude/longitude info
-	address_info = [address_line_1, address_line_2, city, state, zip_code, country]
+	address_info = [address_line_1, city, state, zip_code, country]
 	geolocator = Nominatim()
 	location = geolocator.geocode(" ".join(address_info))
+	if location is None:
+		raise InvalidUsage('Location not found, please enter a valid address.', status_code=400)
 	geo_point = ndb.GeoPt(location.latitude,location.longitude)
 
 
-	a = Delivery_Address(address_line_1=address_line_1, address_line_1=address_line_1, 
+	a = Delivery_Address(address_line_1=address_line_1, address_line_2=address_line_2, 
 						 city=city, state=state, country=country, zip_code=zip_code, 
 						 geo_point=geo_point)
 
@@ -51,7 +53,10 @@ def delete_delivery_address(user_id):
 	if u is None:
 		raise InvalidUsage('UserID does not match any existing user', status_code=400)
 
-	u.home_address = None
+	if u.home_address != None:
+		u.home_address = None
+	else:
+		raise InvalidUsage('No User home address found.', status_code=400)
 	u.put()
 
 	return "User home address successfully deleted.", 200

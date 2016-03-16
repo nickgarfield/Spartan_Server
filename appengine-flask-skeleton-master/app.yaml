@@ -36,11 +36,8 @@ handlers:
 - url: /rent_event/.*
   script: rent_event.app
 
-- url: /meeting_event/.*
-  script: meeting_event.app
-
-- url: /advertised_listings/.*
-  script: advertised_listings.app
+- url: /delivery_address/.*
+  script: delivery_address.app
 
 - url: /.*  # This regex directs all routes to main.app
   script: main.app
@@ -53,8 +50,8 @@ handlers:
 # of the App Engine SDK don't need to be listed here, instead add them to your
 # project directory, either as a git submodule or as a plain subdirectory.
 # TODO: List any other App Engine SDK libs you may need here.
-# libraries:
+libraries:
 #- name: jinja2
 #  version: latest
-# - name: ssl
-#   version: latest
+- name: ssl
+  version: latest
