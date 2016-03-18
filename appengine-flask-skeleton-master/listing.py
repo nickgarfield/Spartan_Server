@@ -13,9 +13,9 @@ app = Flask(__name__)
 # Create a new listing object and put into Datastore and Search App
 @app.route('/listing/create', methods=['POST'])
 def create_listing(user_id):
-	json_data 			= request.get_json()
-	user_id 			= json_data.get('user_id','')
-	tag_id 				= json_data.get('tag_id', '')
+	json_data 	= request.get_json()
+	user_id 	= json_data.get('user_id','')
+	type_id 	= json_data.get('type_id', '')
 
 	# Check to see if the user exists
 	user = User.get_by_id(int(user_id))
@@ -24,17 +24,17 @@ def create_listing(user_id):
 	user_key = ndb.Key('User', int(user_id))
 
 	# Check to see if the tag exists
-	tag = Tag.get_by_id(int(tag_id))
-	if tag is None:
+	item_type = Item_Type.get_by_id(int(type_id))
+	if item_type is None:
 		raise InvalidUsage('TagID does not match any existing tag', status_code=400)
-	tag_key = ndb.Key('Tag', int(tag_id))
+	type_key = ndb.Key('Item_Type', int(type_id))
 
 	# Set default listing data
 	status = 'Available'
 	rating = -1.0
 
 	# Add listing to Datastore
-	l = Listing(owner=user_key, tag=tag_key, status=status, rating=rating)
+	l = Listing(owner=user_key, item_type=type_key, status=status, rating=rating)
 
 	try:
 		listing_key = l.put()
@@ -57,7 +57,7 @@ def create_listing(user_id):
 	# 	abort(500)
 
 	# Return the new Listing data
-	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'tag_id':tag_id, 'status':status, 'item_description':None, 'rating':rating}
+	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
 	resp = jsonify(data)
 	resp.status_code = 201
 	return resp
@@ -161,7 +161,7 @@ def update_listing(listing_id):
 
 
 	# Return the attributes of the new item
-	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'tag_id':str(l.tag.id()), 'status':status, 'item_description':item_description, 'rating':l.rating}
+	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'type_id':str(l.item_type.id()), 'status':status, 'item_description':item_description, 'rating':l.rating}
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
