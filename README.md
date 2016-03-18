@@ -52,12 +52,11 @@ curl http://molten-unison-112921.appspot.com/user/user_id=5634387206995968
 ### Create User Home Address
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/new_delivery_address.json http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5634387206995968
 
-curl -H "Content-Type: application/json" -X POST -d "{\"address_line_1\":\"502 East Springfield Ave\", \"address_line_2\":\"Apt 310\", \"city\":\"Champaign\", \"state\":\"IL\", \"zip_code\":\"61820\", \"country\":\"USA\"}" http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5634387206995968
-
 ### Delete User Home Address
 curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/user_id=5634387206995968
 
 ### Get User Home Address
+curl http://molten-unison-112921.appspot.com/delivery_address/get/user_id=5634387206995968
 
 
 
