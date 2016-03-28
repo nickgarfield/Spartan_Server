@@ -8,7 +8,7 @@ class Verification(ndb.Model):
 
 class Delivery_Address(ndb.Model):
 	address_line_1 	= ndb.StringProperty(required=True, indexed=False)
-	adderss_line_2 	= ndb.StringProperty(indexed=False)
+	address_line_2 	= ndb.StringProperty(indexed=False)
 	city 			= ndb.StringProperty(indexed=False)
 	state 			= ndb.StringProperty(indexed=False)
 	country 		= ndb.StringProperty(indexed=False)
@@ -48,6 +48,7 @@ class Listing(ndb.Model):
 	item_type  			= ndb.KeyProperty(required=True, kind=Item_Type, indexed=False)
 	item_description 	= ndb.StringProperty(indexed=False)
 	rating		 		= ndb.FloatProperty(default=-1.0, indexed=False)	# Value of -1 is used to signal no rating
+	listing_img_paths	= ndb.StringProperty(repeated=True, indexed=False)
 	date_created		= ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 	date_last_modified 	= ndb.DateTimeProperty(auto_now=True, indexed=False)
 

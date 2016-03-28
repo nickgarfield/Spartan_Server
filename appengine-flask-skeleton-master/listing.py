@@ -42,52 +42,20 @@ def create_listing(user_id):
 	except:
 		abort(500)
 
-	# TODO: Add listing to Search App
-	# TODO: Get location based on user's current delivery address
-	# new_item = search.Document(
-	# 	doc_id=listing_id,
-	# 	fields=[search.TextField(name='name', value=name),
-	# 			search.GeoField(name='location', value=search.GeoPoint(location.lat,location.lon)),
-	# 			search.TextField(name='owner_id', value=str(user_id))])
-
-	# try:
-	# 	index = search.Index(name='Listing')
-	# 	index.put(new_item)
-	# except:
-	# 	abort(500)
 
 	# Return the new Listing data
-	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
-	resp = jsonify(data)
-	resp.status_code = 201
-	return resp
+	# data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
+	# resp = jsonify(data)
+	# resp.status_code = 201
+	# return resp
 
-
-
-'''
-@app.route('/listing/suggested_rates/total_value=<float:total_value>', methods=['GET'])
-def pricing_suggested_rates(total_value):
-	half_value = 0.5 * total_value
-
-	# Reasoning: If you rent for 3 days at the hourly rate, you pay for half of the item
-	hourly_rate = format(half_value/72.0,'.2f')
-
-	# Reasoning: If you rent for 2 weeks at the daily rate, you pay for half of the item
-	daily_rate = format(half_value/14.0,'.2f')
-
-	# Reasoning: If you rent for 5 weeks at the weekly rate, you pay for half of the item
-	weekly_rate = format(half_value/5.0,'.2f')
-
-	data = {'hourly_rate':hourly_rate, 'daily_rate':daily_rate, 'weekly_rate':weekly_rate}
-	resp = jsonify(data)
-	resp.status_code = 200
-	return resp
-'''
+	# Return response
+	return 'Listing successfully created.', 201
 
 
 
 
-# Delete listing from Search API and set status to 'Deleted' in Datastore
+# set status to 'Deleted' in Datastore
 @app.route('/listing/delete/listing_id=<int:listing_id>', methods=['DELETE'])
 def delete_listing(listing_id):
 	# Get the listing
@@ -104,15 +72,8 @@ def delete_listing(listing_id):
 	except:
 		abort(500)
 
-	# Delete Search App entity
-	try:
-		index = search.Index(name='Listing')
-		index.delete(str(listing_id))
-	except:
-		abort(500)
-
 	# Return response
-	return 'Success', 204
+	return 'Listing successfully deleted.', 204
 
 
 
@@ -139,38 +100,14 @@ def update_listing(listing_id):
 	except:
 		abort(500)
 
-	# Add the updated item to the Search API
-	# if l.status == 'Available':
-	# 	updated_item = search.Document(
-	# 			doc_id=str(listing_id),
-	# 			fields=[search.TextField(name='name', value=name),
-	# 					search.GeoField(name='location', value=search.GeoPoint(l.location.lat,l.location.lon)),
-	# 					search.TextField(name='owner_id', value=str(l.owner.id()))])
 
-	# 	try:
-	# 		index = search.Index(name='Listing')
-	# 		index.put(updated_item)
-	# 	except:
-	# 		abort(500)
-	# else:
-	# 	try:
-	# 		index = search.Index(name='Listing')
-	# 		index.delete(str(listing_id))
-	# 	except:
-	# 		abort(500)
-
-
-	# Return the attributes of the new item
-	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'type_id':str(l.item_type.id()), 'status':status, 'item_description':item_description, 'rating':l.rating}
-	resp = jsonify(data)
-	resp.status_code = 200
-	return resp
+	# Return response
+	return 'Listing successfully updated.', 204
 
 
 
 
 # Add a listing image
-# MAX_NUM_ITEM_IMAGES = 5
 @app.route('/listing/create_listing_image/listing_id=<int:listing_id>', methods=['POST'])
 def create_listing_image(listing_id):
 	userfile = request.files['userfile']
@@ -199,15 +136,30 @@ def create_listing_image(listing_id):
 	image.acl.all().grant_read()
 	image.acl.save()
 
-	resp = jsonify({'image_path':path, 'image_media_link':image.media_link})
-	resp.status_code = 201
-	return resp
+	# Add path to list of img_paths
+	try:
+		l.listing_img_paths.append(path)
+		l.put()
+	except:
+		abort(500)
+
+	# resp = jsonify({'image_path':path, 'image_media_link':image.media_link})
+	# resp.status_code = 201
+	# return resp
+
+	# Return response
+	return 'Listing image successfully uploaded.', 204
 
 
 
 # Delete a listing image
-@app.route('/listing/delete_listing_image/path=<path:path>', methods=['DELETE'])
-def delete_listing_image(path):
+@app.route('/listing/delete_listing_image/listing_id=<int:listing_id>/path=<path:path>', methods=['DELETE'])
+def delete_listing_image(listing_id,path):
+	# Check if listing exists
+	l = Listing.get_by_id(listing_id)
+	if l is None:
+		raise InvalidUsage('Listing does not exist!', status_code=400)
+
 	# Create client for interfacing with Cloud Storage API
 	client = storage.Client()
 	bucket = client.get_bucket(global_vars.LISTING_IMG_BUCKET)
@@ -215,8 +167,18 @@ def delete_listing_image(path):
 	# Delete the image from the given path
 	bucket.delete_blob(path)
 
+	# Delete path from list of img_paths
+	try:
+		if path in l.listing_img_paths:
+			l.listing_img_paths.remove(path)
+		except ValueError:
+    		raise InvalidUsage('Image does not exist!', status_code=400)
+		l.put()
+	except:
+		abort(500)
+
 	# Return response
-	return 'Success', 204
+	return 'Listing image successfully deleted.', 204
 
 
 
