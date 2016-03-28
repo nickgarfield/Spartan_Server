@@ -112,7 +112,7 @@ def delete_listing(listing_id):
 		abort(500)
 
 	# Return response
-	return 204
+	return 'Success', 204
 
 
 
@@ -216,7 +216,7 @@ def delete_listing_image(path):
 	bucket.delete_blob(path)
 
 	# Return response
-	return 204
+	return 'Success', 204
 
 
 

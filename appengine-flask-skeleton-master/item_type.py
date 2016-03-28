@@ -12,8 +12,8 @@ from error_handlers import InvalidUsage
 app = Flask(__name__)
 
 # To reload the Item_Type data, use the command:
-# curl -H "Content-Type: application/json" -X POST -d @item_type_data.json https://bygo-client-server.appspot.com/item_type/load
-@app.route('/item_type/load', methods=['POST'])
+# curl -H "Content-Type: application/json" -X POST -d @item_type_data.json https://bygo-client-server.appspot.com/item_type/load_data
+@app.route('/item_type/load_data', methods=['POST'])
 def load_item_types():
 
 	# Delete all the Item_Type entities
@@ -71,14 +71,18 @@ def create_item_type_image(type_id):
 	return resp
 
 
+
 @app.route('/item_type/get/type_id=<int:type_id>', methods=['GET'])
 def get_item_type(type_id):
 
+	# Check to make sure the Item_Type exists
 	i = Item_Type.get_by_id(type_id)
 	if i is None:
 		raise InvalidUsage('Item_Type id does not match any existing user', 400)
 
-	data = {'type_id':str(type_id), 'name':i.name, 'value':i.value, 'delivery_fee':i.delivery_fee}
+	item_type_img_media_links = get_item_type_images(type_id)
+
+	data = {'type_id':str(type_id), 'name':i.name, 'value':i.value, 'delivery_fee':i.delivery_fee, 'image_media_links':item_type_img_media_links}
 		
 	# Return response
 	resp = jsonify(data)
@@ -86,6 +90,17 @@ def get_item_type(type_id):
 	return resp
 
 
+# Return an Item_Type's image links
+def get_item_type_images(type_id):	
+	client = storage.Client()
+	bucket = client.get_bucket(global_vars.ITEM_TYPE_IMG_BUCKET)
+
+	item_type_img_objects = bucket.list_blobs(prefix=str(type_id))
+	item_type_img_media_links = []
+	for img_object in item_type_img_objects:
+		item_type_img_media_links += [img_object.media_link]
+
+	return item_type_img_media_links
 
 
 
