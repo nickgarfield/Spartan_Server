@@ -39,6 +39,12 @@ handlers:
 - url: /delivery_address/.*
   script: delivery_address.app
 
+- url: /verification/.*
+  script: verification.app
+
+- url: /item_type/.*
+  script: item_type.app
+
 - url: /.*  # This regex directs all routes to main.app
   script: main.app
 
