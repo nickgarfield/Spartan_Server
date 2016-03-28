@@ -45,6 +45,9 @@ handlers:
 - url: /item_type/.*
   script: item_type.app
 
+- url: /discovery/.*
+  script: discovery.app
+
 - url: /.*  # This regex directs all routes to main.app
   script: main.app
 
