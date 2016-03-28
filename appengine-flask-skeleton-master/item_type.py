@@ -29,7 +29,25 @@ def load_item_types():
 		
 		# Add the Item_Type to the Datastore
 		try:
-			i.put()
+			item_type_key = i.put()
+			type_id = str(item_type_key.id())
+
+			
+			# Add the Item_Type to the Search API
+			new_item = search.Document(
+				doc_id=type_id,
+				fields=[search.TextField(name='tags', value=name)])
+
+		except:
+			abort(500)
+
+
+
+		
+
+		try:
+			index = search.Index(name='Listing')
+			index.put(new_item)
 		except:
 			abort(500)
 

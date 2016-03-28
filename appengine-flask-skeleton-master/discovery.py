@@ -23,12 +23,15 @@ def get_default_home_page_data():
 
 
 
-@app.route('/discovery/search/')
-def search():
-	q = request.args.get('q')
+# Note: This is a POST method to allow for search queries with spaces/non-alphabetic characters 
+# For example: If a user presses a ' ' or '?' or '#' a regular GET request with a query parameter will fail
+@app.route('/discovery/search_item_types', methods=['POST'])
+def search_item_types():
 
+	json_data = request.get_json()
+	query = json_data.get('query', '')
 	layout_data = [{'type':1, 'id':'5695159920492544'}, {'type':1, 'id':'5685925472370688'}]
-	
+
 	resp = jsonify({'layout_data': layout_data})
 	resp.status_code = 200
 	return resp
