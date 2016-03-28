@@ -14,14 +14,24 @@ app = Flask(__name__)
 @app.route('/discovery/default_home_page', methods=['GET'])
 def get_default_home_page_data():
 
-	home_page = [{'type':0, 'title':'Play Some Games', 'item_type_ids':['5629652273987584', '5685925472370688', '5695159920492544']}, 
+	layout_data = [{'type':0, 'title':'Play Some Games', 'item_type_ids':['5629652273987584', '5685925472370688', '5695159920492544']}, 
 	{'type':0, 'title':'Play Some More Games', 'item_type_ids':['5695159920492544', '5685925472370688', '5629652273987584']}]
 
-	resp = jsonify({'home_page_data': home_page})
+	resp = jsonify({'layout_data': layout_data})
 	resp.status_code = 200
 	return resp
 
 
+
+@app.route('/discovery/search/')
+def search():
+	q = request.args.get('q')
+
+	layout_data = [{'type':1, 'id':'5695159920492544'}, {'type':1, 'id':'5685925472370688'}]
+	
+	resp = jsonify({'layout_data': layout_data})
+	resp.status_code = 200
+	return resp
 
 
 
