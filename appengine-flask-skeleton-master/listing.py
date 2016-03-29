@@ -12,14 +12,14 @@ app = Flask(__name__)
 
 # Create a new listing object and put into Datastore and Search App
 @app.route('/listing/create', methods=['POST'])
-def create_listing(user_id):
+def create_listing():
 	json_data 	= request.get_json()
 	user_id 	= json_data.get('user_id','')
 	type_id 	= json_data.get('type_id', '')
 
 	# Check to see if the user exists
-	user = User.get_by_id(int(user_id))
-	if user is None:
+	u = User.get_by_id(int(user_id))
+	if u is None:
 		raise InvalidUsage('UserID does not match any existing user', status_code=400)
 	user_key = ndb.Key('User', int(user_id))
 
@@ -42,15 +42,24 @@ def create_listing(user_id):
 	except:
 		abort(500)
 
+	Add listing to Search App
+	new_item = search.Document(
+		doc_id=listing_id,
+		fields=[search.TextField(name='name', value=name),
+				search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat,u.home_address.geo_point.lon)),
+				search.TextField(name='owner_id', value=str(user_id))])
 
-	# Return the new Listing data
-	# data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
-	# resp = jsonify(data)
-	# resp.status_code = 201
-	# return resp
+	try:
+		index = search.Index(name='Listing')
+		index.put(new_item)
+	except:
+		abort(500)
 
-	# Return response
-	return 'Listing successfully created.', 201
+	Return the new Listing data
+	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
+	resp = jsonify(data)
+	resp.status_code = 201
+	return resp
 
 
 
@@ -69,6 +78,13 @@ def delete_listing(listing_id):
 	# Add the updated listing status to the Datastore
 	try:
 		l.put()
+	except:
+		abort(500)
+
+	# Delete Search App entity
+	try:
+		index = search.Index(name='Listing')
+		index.delete(str(listing_id))
 	except:
 		abort(500)
 
@@ -100,10 +116,11 @@ def update_listing(listing_id):
 	except:
 		abort(500)
 
-
-	# Return response
-	return 'Listing successfully updated.', 204
-
+	# Return the attributes of the new item
+	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'type_id':str(l.item_type.id()), 'status':status, 'item_description':item_description, 'rating':l.rating}
+	resp = jsonify(data)
+	resp.status_code = 200
+	return resp
 
 
 
@@ -143,12 +160,9 @@ def create_listing_image(listing_id):
 	except:
 		abort(500)
 
-	# resp = jsonify({'image_path':path, 'image_media_link':image.media_link})
-	# resp.status_code = 201
-	# return resp
-
-	# Return response
-	return 'Listing image successfully uploaded.', 204
+	resp = jsonify({'image_path':path, 'image_media_link':image.media_link})
+	resp.status_code = 201
+	return resp
 
 
 
