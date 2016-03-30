@@ -25,6 +25,7 @@ def load_item_types():
 		name = item_type_data['name']
 		value = item_type_data['value']
 		delivery_fee = item_type_data['delivery_fee']
+		tags = item_type_data['tags']
 		i = Item_Type(name=name, delivery_fee=delivery_fee, value=value)
 		
 		# Add the Item_Type to the Datastore
@@ -32,18 +33,15 @@ def load_item_types():
 			item_type_key = i.put()
 			type_id = str(item_type_key.id())
 
-			
 			# Add the Item_Type to the Search API
 			new_item = search.Document(
 				doc_id=type_id,
-				fields=[search.TextField(name='tags', value=name)])
+				fields=[search.TextField(name='tags', value=tags)]
+			)
 
 		except:
 			abort(500)
 
-
-
-		
 
 		try:
 			index = search.Index(name='Listing')
