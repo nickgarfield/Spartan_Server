@@ -38,13 +38,9 @@ def load_item_types():
 				doc_id=type_id,
 				fields=[search.TextField(name='tags', value=tags)])
 
-		except:
-			abort(500)
-
-
-		try:
 			index = search.Index(name='Listing')
 			index.put(new_item)
+
 		except:
 			abort(500)
 
