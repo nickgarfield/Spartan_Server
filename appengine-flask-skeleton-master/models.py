@@ -15,6 +15,7 @@ class Delivery_Address(ndb.Model):
 	zip_code 		= ndb.StringProperty(indexed=False)
 	geo_point 		= ndb.GeoPtProperty(indexed=False)
 
+
 class User(ndb.Model):
 	first_name 					= ndb.StringProperty(required=True, indexed=False)
 	last_name 					= ndb.StringProperty(required=True, indexed=False)

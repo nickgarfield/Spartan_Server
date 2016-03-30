@@ -343,6 +343,7 @@ def get_user(user_id):
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -369,10 +370,11 @@ def login_user():
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
 	# Return the relevant data in JSON format
-	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+	data = {'user_id':str(u.key.id()), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -395,7 +397,7 @@ def login_facebook_user():
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
 	# Return the relevant data in JSON format
-	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+	data = {'user_id':str(u.key.id()), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
