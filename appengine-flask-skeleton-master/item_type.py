@@ -15,7 +15,6 @@ app = Flask(__name__)
 # curl -H "Content-Type: application/json" -X POST -d @item_type_data.json https://bygo-client-server.appspot.com/item_type/load_data
 @app.route('/item_type/load_data', methods=['POST'])
 def load_item_types():
-
 	# Delete all the Item_Type entities
 	ndb.delete_multi(Item_Type.query().fetch(keys_only=True))
 
@@ -25,33 +24,58 @@ def load_item_types():
 		name = item_type_data['name']
 		value = item_type_data['value']
 		delivery_fee = item_type_data['delivery_fee']
+		tags = item_type_data['tags']
 		i = Item_Type(name=name, delivery_fee=delivery_fee, value=value)
 		
 		# Add the Item_Type to the Datastore
 		try:
 			item_type_key = i.put()
-			type_id = str(item_type_key.id())
-
-			
-			# Add the Item_Type to the Search API
-			new_item = search.Document(
-				doc_id=type_id,
-				fields=[search.TextField(name='tags', value=name)])
-
 		except:
 			abort(500)
 
-
-
-		
+		# Add the Item_Type to the Search API
+		new_item = search.Document(
+			doc_id=str(item_type_key.id()),
+			fields=[search.TextField(name='tags', value=tags)])
 
 		try:
-			index = search.Index(name='Listing')
+			index = search.Index(name='Item_Type')
 			index.put(new_item)
 		except:
 			abort(500)
 
-	return 'Success', 201
+	return 'Item_Types successfully loaded.', 201
+
+
+app.route('/item_type/create_type', methods=['POST'])
+def load_item_types():
+	# Add the new Item_Type entities
+	json_data = request.get_json()
+	for item_type_data in json_data:
+		name = item_type_data['name']
+		value = item_type_data['value']
+		delivery_fee = item_type_data['delivery_fee']
+		tags = item_type_data['tags']
+		i = Item_Type(name=name, delivery_fee=delivery_fee, value=value)
+		
+		# Add the Item_Type to the Datastore
+		try:
+			item_type_key = i.put()
+		except:
+			abort(500)
+
+		# Add the Item_Type to the Search API
+		new_item = search.Document(
+			doc_id=str(item_type_key.id()),
+			fields=[search.TextField(name='tags', value=tags)])
+
+		try:
+			index = search.Index(name='Item_Type')
+			index.put(new_item)
+		except:
+			abort(500)
+
+	return 'Item_Types successfully loaded.', 201
 
 
 # To create 
