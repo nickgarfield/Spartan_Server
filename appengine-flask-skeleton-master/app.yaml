@@ -48,6 +48,10 @@ handlers:
 - url: /discovery/.*
   script: discovery.app
 
+- url: /order/.*
+  script: order.app
+
+
 - url: /.*  # This regex directs all routes to main.app
   script: main.app
 

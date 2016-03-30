@@ -36,8 +36,7 @@ def load_item_types():
 			# Add the Item_Type to the Search API
 			new_item = search.Document(
 				doc_id=type_id,
-				fields=[search.TextField(name='tags', value=tags)]
-			)
+				fields=[search.TextField(name='tags', value=tags)])
 
 		except:
 			abort(500)
