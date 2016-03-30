@@ -39,19 +39,17 @@ def create_listing():
 	try:
 		listing_key = l.put()
 		listing_id	= str(listing_key.id())
-	except:
-		abort(500)
 
-	Add listing to Search App
-	new_item = search.Document(
-		doc_id=listing_id,
-		fields=[search.TextField(name='name', value=name),
-				search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat,u.home_address.geo_point.lon)),
-				search.TextField(name='owner_id', value=str(user_id))])
+		# Add listing to Search App
+		new_item = search.Document(
+			doc_id=listing_id,
+			fields=[search.TextField(name='name', value=name),
+					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat,u.home_address.geo_point.lon)),
+					search.TextField(name='owner_id', value=str(user_id))])
 
-	try:
 		index = search.Index(name='Listing')
 		index.put(new_item)
+
 	except:
 		abort(500)
 

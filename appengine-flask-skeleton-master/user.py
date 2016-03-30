@@ -151,8 +151,8 @@ def reactivate_user(user_id):
 	# Set user status to 'Active'
 	u.status = 'Active'
 
-	u.is_phone_number_verified = False
-	u.is_email_verified = False
+	u.phone_number_verification.is_verified = False
+	u.email_verification.is_verified = False
 	
 
 	# Add the updated user status to the Datastore
@@ -218,11 +218,11 @@ def update_user(user_id):
 
 	# If the phone number is different, phone number is no longer verified 
 	if phone_number != u.phone_number:
-		u.is_phone_number_verified = False
+		u.phone_number_verification.is_verified = False
 
 	# If the email is different, email is no longer verified
 	if email != u.email:
-		u.is_email_verified = False
+		u.email_verification.is_verified = False
 	
 	# Update user attributes
 	u.first_name 		 = first_name
