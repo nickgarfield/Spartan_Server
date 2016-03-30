@@ -257,6 +257,7 @@ def update_user(user_id):
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -401,6 +402,7 @@ def login_facebook_user():
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+			
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp

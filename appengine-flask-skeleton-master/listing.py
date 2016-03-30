@@ -4,7 +4,7 @@ import global_vars
 from google.appengine.ext import ndb
 from google.appengine.api import search
 from gcloud import storage
-from models import User,Listing
+from models import User,Listing,Item_Type
 from error_handlers import InvalidUsage
 
 app = Flask(__name__)
@@ -40,20 +40,24 @@ def create_listing():
 		listing_key = l.put()
 		listing_id	= str(listing_key.id())
 
-		# Add listing to Search App
-		new_item = search.Document(
-			doc_id=listing_id,
-			fields=[search.TextField(name='name', value=name),
-					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat,u.home_address.geo_point.lon)),
-					search.TextField(name='owner_id', value=str(user_id))])
+		# FIXME: Uncomment when u.home_address is fully integrated into iOS app
+		# TODO: Add u.home_address check here and return error if user has no home address
+		# TODO: Add u.phone_number_verification.is_verified check here
 
-		index = search.Index(name='Listing')
-		index.put(new_item)
+		# Add listing to Search App
+		# new_item = search.Document(
+		# 	doc_id=listing_id,
+		# 	fields=[search.TextField(name='name', value=name),
+		# 			search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat,u.home_address.geo_point.lon)),
+		# 			search.TextField(name='owner_id', value=str(user_id))])
+
+		# index = search.Index(name='Listing')
+		# index.put(new_item)
 
 	except:
 		abort(500)
 
-	Return the new Listing data
+	# Return the new Listing data
 	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
 	resp = jsonify(data)
 	resp.status_code = 201
@@ -183,9 +187,11 @@ def delete_listing_image(listing_id,path):
 	try:
 		if path in l.listing_img_paths:
 			l.listing_img_paths.remove(path)
-		except ValueError:
-    		raise InvalidUsage('Image does not exist!', status_code=400)
+		else:
+			raise InvalidUsage('Image does not exist!', status_code=400)
+		
 		l.put()
+	
 	except:
 		abort(500)
 
