@@ -38,7 +38,7 @@ def load_item_types():
 				doc_id=type_id,
 				fields=[search.TextField(name='tags', value=tags)])
 
-			index = search.Index(name='Listing')
+			index = search.Index(name='Item_Type')
 			index.put(new_item)
 
 		except:
