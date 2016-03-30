@@ -180,6 +180,7 @@ def reactivate_user(user_id):
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+
 	resp = jsonify(data)
 	resp.status_code = 200
 	return resp
@@ -218,11 +219,13 @@ def update_user(user_id):
 
 	# If the phone number is different, phone number is no longer verified 
 	if phone_number != u.phone_number:
-		u.phone_number_verification.is_verified = False
+		if u.phone_number_verification is not None:
+			u.phone_number_verification.is_verified = False
 
 	# If the email is different, email is no longer verified
 	if email != u.email:
-		u.email_verification.is_verified = False
+		if u.email_verification is not None:
+			u.email_verification.is_verified = False
 	
 	# Update user attributes
 	u.first_name 		 = first_name
