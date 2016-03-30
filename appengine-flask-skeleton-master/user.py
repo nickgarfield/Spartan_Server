@@ -1,4 +1,5 @@
 from flask import Flask,request,json,jsonify,Response,abort
+import logging
 import global_vars
 from google.appengine.ext import ndb
 from google.appengine.api import search
@@ -75,6 +76,7 @@ def create_user():
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
 	resp = jsonify(data)
 	resp.status_code = 201
+	logging.info('%s', data)
 	return resp
 
 
@@ -133,7 +135,7 @@ def delete_from_search(user_id):
 	except:
 		abort(500)
 
-	return 200
+	return 204
 
 
 
@@ -176,14 +178,17 @@ def reactivate_user(user_id):
 
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
-	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
-			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
-			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
-			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+	# data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+	# 		'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
+	# 		'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
+	# 		'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
 
-	resp = jsonify(data)
-	resp.status_code = 200
-	return resp
+	# resp = jsonify(data)
+	# resp.status_code = 200
+	# return resp
+
+	# Return response
+	return 204
 
 
 
@@ -257,9 +262,9 @@ def update_user(user_id):
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
-
 	resp = jsonify(data)
 	resp.status_code = 200
+	logging.info('%s', data)
 	return resp
 
 
@@ -297,8 +302,10 @@ def create_user_image(user_id):
 	u.profile_picture_path = path
 	u.put()
 
-	resp = jsonify({'image_path':u.profile_picture_path, 'image_media_link':image.media_link})
+	data = {'image_path':u.profile_picture_path, 'image_media_link':image.media_link}
+	resp = jsonify(data)
 	resp.status_code = 201
+	logging.info('%s', data)
 	return resp
 
 
@@ -347,6 +354,7 @@ def get_user(user_id):
 
 	resp = jsonify(data)
 	resp.status_code = 200
+	logging.info('%s', data)
 	return resp
 
 
@@ -378,6 +386,7 @@ def login_user():
 
 	resp = jsonify(data)
 	resp.status_code = 200
+	logging.info('Successful phone number login.')
 	return resp
 
 
@@ -402,9 +411,9 @@ def login_facebook_user():
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
-			
 	resp = jsonify(data)
 	resp.status_code = 200
+	logging.info('Successful Facebook login.')
 	return resp
 
 
