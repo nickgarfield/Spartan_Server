@@ -25,29 +25,29 @@ curl -H "Content-Type: application/json" -X POST -d @json.txt http://molten-unis
 
 ########### USER FUNCTIONS ##############
 ### Create User
-curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Olivia\", \"last_name\":\"Park\", \"email\":\"olivia@bygo.io\", \"phone_number\":\"7894561230\", \"password\":\"\", \"signup_method\":\"Facebook\", \"facebook_id\":\"111222333\"}" http://molten-unison-112921.appspot.com/user/create
+curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"joh\", \"last_name\":\"pls\", \"email\":\"joh@bygo.io\", \"phone_number\":\"928374747\", \"password\":\"\", \"signup_method\":\"Facebook\", \"facebook_id\":\"111222333\"}" http://molten-unison-112921.appspot.com/user/create
 
 
 ### Deactivate User
-curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5634387206995968
+curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5717495361044480
 
 ### Delete User from Search API
-curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_from_search/user_id=5634387206995968
+curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_from_search/user_id=5706163895140352
 
 ### Reactivate User
-curl -H "Content-Type: application/json" -X POST -d {} http://molten-unison-112921.appspot.com/user/reactivate/user_id=5634387206995968
+curl -H "Content-Type: application/json" -X POST -d {} http://molten-unison-112921.appspot.com/user/reactivate/user_id=5717495361044480
 
 ### Update User
 curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Sayan\", \"last_name\":\"Roychowdhury\", \"email\":\"sayan@bygo.io\", \"phone_number\":\"0123456789\"}" http://molten-unison-112921.appspot.com/user/update/user_id=5634387206995968
 
 ### Add/Update User profile picture
-curl -X POST -F "filename=profile_picture.jpg" -F "userfile=@C:/Users/Sayan/Desktop/rsz_dsc_0780.jpg" http://molten-unison-112921.appspot.com/user/create_user_image/user_id=5634387206995968
+curl -X POST -F "filename=profile_picture.jpg" -F "userfile=@C:/Users/Sayan/Desktop/tumblr_mzzprh5Rxw1t41r5fo1_500.png" http://molten-unison-112921.appspot.com/user/create_user_image/user_id=5750790484393984
 
 ### Delete User Profile Picture
 curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_user_image/user_id=5634387206995968
 
 ### Get User Data (also returns a media link to their profile picture)
-curl http://molten-unison-112921.appspot.com/user/user_id=5634387206995968
+curl http://molten-unison-112921.appspot.com/user/user_id=5750790484393984
 
 ### Create User Home Address
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/new_delivery_address.json http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5634387206995968
@@ -87,6 +87,23 @@ curl http://molten-unison-112921.appspot.com/listing/get_listings/user_id=575257
 
 ### Get User's Rented Listings (user == renter)
 curl http://molten-unison-112921.appspot.com/listing/get_rented_listings/user_id=5752571553644544
+
+
+
+
+########### CONSISTENCY CHECK FUNCTIONS #############
+### User Consistency Check
+curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/users
+
+### Listing Consistency Check
+curl https://molten-unison-112921.appspot.com/consistency_check/listings
+
+### Item Type Consistency Check
+# curl https://molten-unison-112921.appspot.com/consistency_check/item_types
+
+
+
+
 
 
 
