@@ -16,8 +16,22 @@ app = Flask(__name__)
 @app.route('/item_type/load_data', methods=['POST'])
 def load_item_types():
 
-	# Delete all the Item_Type entities
+	# Delete all the Item_Type entities in Datastore
 	ndb.delete_multi(Item_Type.query().fetch(keys_only=True))
+
+	# Delete all Item_Type entities in Search API
+    doc_index = search.Index(name='Item_Type')
+
+    # looping because get_range by default returns up to 100 documents at a time
+    while True:
+        # Get a list of documents populating only the doc_id field and extract the ids.
+        document_ids = [document.doc_id
+                        for document in doc_index.get_range(ids_only=True)]
+        if not document_ids:
+            break
+        # Delete the documents for the given ids from the Index.
+        doc_index.delete(document_ids)
+
 
 	# Add the new Item_Type entities
 	json_data = request.get_json()
@@ -28,23 +42,90 @@ def load_item_types():
 		tags = item_type_data['tags']
 		i = Item_Type(name=name, delivery_fee=delivery_fee, value=value)
 		
-		# Add the Item_Type to the Datastore
+		
 		try:
+			# Add the Item_Type to the Datastore
 			item_type_key = i.put()
 			type_id = str(item_type_key.id())
 
 			# Add the Item_Type to the Search API
 			new_item = search.Document(
-				doc_id=type_id,
-				fields=[search.TextField(name='tags', value=tags)])
+				doc_id=str(type_id),
+				fields=[search.TextField(name='name', value=name),
+						search.TextField(name='tags', value=tags)])
 
 			index = search.Index(name='Item_Type')
 			index.put(new_item)
 
+		# FIXME: error handlers 
+		# except search.Error:
+		# 	raise ServerError('Search API Put failed.')
+
 		except:
 			abort(500)
 
-	return 'Success', 201
+
+	return 'Item_types successfully loaded.', 201
+
+
+
+# Function to ADD a single ITEM_TYPE
+@app.route('/item_type/create', methods=['POST'])
+def create_item_type():
+	json_data 		= request.get_json()
+	name 			= json_data.get('name','')
+	value 			= json_data.get('value','')
+	delivery_fee	= json_data.get('delivery_fee','')
+	tags 			= json_data.get('tags','')
+	i = Item_Type(name=name, delivery_fee=delivery_fee, value=value)
+
+	try:
+		# Add the Item_Type to the Datastore
+		item_type_key = i.put()
+		type_id = str(item_type_key.id())
+
+		# Add the Item_Type to the Search API
+		new_item = search.Document(
+			doc_id=type_id,
+			fields=[search.TextField(name='name', value=name),
+					search.TextField(name='tags', value=tags)])
+		index = search.Index(name='Item_Type')
+		index.put(new_item)
+
+	except:
+		abort(500)
+
+
+	return 'Item_type successfully added.', 201
+
+
+
+
+# Function to ADD a single TAG to an existing item_type
+# @app.route('/item_type/create/tag', methods=['POST'])
+# def create_item_type_tag():
+# 	json_data 		= request.get_json()
+# 	name 			= json_data.get('name','')
+# 	tag 			= json_data.get('tag','')
+
+# 	qry = Item_Type.query(Item_Type.name == name).fetch(keys_only=True)
+# 	if qry is None:
+# 		raise InvalidUsage('No matching item_type found!', 400)
+
+# 	try:
+# 		# Add the Item_Type to the Search API
+# 		new_item = search.Document(
+# 			doc_id=type_id,
+# 			fields=[search.TextField(name='name', value=name),
+# 					search.TextField(name='tags', value=tags)])
+# 		index = search.Index(name='Item_Type')
+# 		index.put(new_item)
+# 	except:
+# 		abort(500)
+
+
+# 	return 'Item_type successfully added.', 201
+
 
 
 # To create 
@@ -121,6 +202,12 @@ def handle_invalid_usage(error):
 	response = jsonify(error.to_dict())
 	response.status_code = error.status_code
 	return response
+
+# @app.errorhandler(ServerError)
+# def handle_server_error(e):
+# 	response = jsonify(error.to_dict())
+# 	response.status_code = 500
+# 	return response
 
 @app.errorhandler(404)
 def page_not_found(e):
