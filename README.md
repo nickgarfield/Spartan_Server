@@ -90,6 +90,18 @@ curl http://molten-unison-112921.appspot.com/listing/get_rented_listings/user_id
 
 
 
+########### ITEM_TYPE FUNCTIONS ##############
+### Load Data from JSON file
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/item_type_list.json http://molten-unison-112921.appspot.com/item_type/load_data
+
+### Create new Item_Type from JSON file
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/new_item_type.json http://molten-unison-112921.appspot.com/item_type/create
+
+### Delete Item_Type
+curl -X DELETE http://molten-unison-112921.appspot.com/item_type/delete/item_type_id=5700735861784576
+
+
+
 
 ########### CONSISTENCY CHECK FUNCTIONS #############
 ### User Consistency Check
