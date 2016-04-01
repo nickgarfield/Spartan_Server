@@ -29,6 +29,16 @@ def create_listing():
 		raise InvalidUsage('TagID does not match any existing tag', status_code=400)
 	type_key = ndb.Key('Item_Type', int(type_id))
 
+
+	# Check to see if the user has a home address
+	if u.home_address is None:
+		raise InvalidUsage('User does not have a home address', status_code=400)
+
+	# Check to see if the phone number is verified
+	if u.phone_number_verification is None or not u.phone_number_verification.is_verified:
+		raise InvalidUsage('User does not have a verified phone number', status_code=400)
+
+
 	# Set default listing data
 	status = 'Available'
 	rating = -1.0
@@ -41,18 +51,15 @@ def create_listing():
 		listing_id	= str(listing_key.id())
 
 		# FIXME: Uncomment when u.home_address is fully integrated into iOS app
-		# TODO: Add u.home_address check here and return error if user has no home address
-		# TODO: Add u.phone_number_verification.is_verified check here
-
 		# Add listing to Search App
-		# new_item = search.Document(
-		# 	doc_id=listing_id,
-		# 	fields=[search.TextField(name='name', value=name),
-		# 			search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat,u.home_address.geo_point.lon)),
-		# 			search.TextField(name='owner_id', value=str(user_id))])
+		new_item = search.Document(
+			doc_id=listing_id,
+			fields=[search.TextField(name='type_id', value=str(type_id)),
+					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat, u.home_address.geo_point.lon)),
+					search.TextField(name='owner_id', value=str(user_id))])
 
-		# index = search.Index(name='Listing')
-		# index.put(new_item)
+		index = search.Index(name='Listing')
+		index.put(new_item)
 
 	except:
 		abort(500)

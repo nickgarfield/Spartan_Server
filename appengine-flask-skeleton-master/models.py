@@ -6,11 +6,13 @@ class Verification(ndb.Model):
 	distribution_datetime 	= ndb.DateTimeProperty(auto_now_add=True, indexed=False)
 	is_verified 			= ndb.BooleanProperty(default=False, indexed=False)
 
+
 class Delivery_Address(ndb.Model):
 	name = ndb.StringProperty(indexed=False)
 	google_places_id = ndb.StringProperty(indexed=False)
 	address = ndb.StringProperty(required=True, indexed=False)
 	geo_point = ndb.GeoPtProperty(required=True, indexed=False)
+
 
 class User(ndb.Model):
 	first_name 					= ndb.StringProperty(required=True, indexed=False)

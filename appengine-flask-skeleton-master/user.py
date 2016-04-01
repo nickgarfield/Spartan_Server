@@ -62,9 +62,11 @@ def create_user():
 		fields=[search.TextField(name='name', value=first_name+' '+last_name),
 				search.TextField(name='phone_number', value=phone_number),
 				search.TextField(name='email', value=email)])
+	
 	try:
 		index = search.Index(name='User')
 		index.put(new_user)
+
 	except:
 		abort(500)
 
@@ -124,7 +126,7 @@ def deactivate_user(user_id):# Edit Datastore entity
 
 	# Return response
 	return 'User successfully deactivated', 204
-	
+
 
 
 @app.route('/user/delete_from_search/user_id=<int:user_id>', methods=['DELETE'])
