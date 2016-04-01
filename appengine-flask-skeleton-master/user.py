@@ -4,7 +4,7 @@ import global_vars
 from google.appengine.ext import ndb
 from google.appengine.api import search
 from gcloud import storage
-from models import User, Listing, Verification
+from models import User, Listing, Verification, Delivery_Address
 from error_handlers import InvalidUsage
 
 app = Flask(__name__)
@@ -179,6 +179,8 @@ def reactivate_user(user_id):
 
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
+
+	# TODO: Return HomeAddress data
 	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
@@ -269,6 +271,31 @@ def update_user(user_id):
 	return resp
 
 
+@app.route('/user/update_home_address/user_id=<int:user_id>', methods=['POST'])
+def update_home_address(user_id):
+	json_data = request.get_json()
+	name = json_data.get('name', '')
+	google_places_id = json_data.get('google_places_id', '')
+	address = json_data.get('address', '')
+	geo_point = json_data.get('geo_point', '')
+
+	# Get the user
+	u = User.get_by_id(user_id)
+	if u is None:
+		raise InvalidUsage('User ID does not match any existing user', 400)
+
+	u.home_address = Delivery_Address(address=address, name=name, google_places_id=google_places_id, geo_point=ndb.GeoPt(geo_point))
+
+	try:
+		u.put()
+	except:
+		abort(500)
+
+	data = {'home_address_address':address, 'home_address_name':name, 'home_address_google_places_id':google_places_id}
+	resp = jsonify(data)
+	resp.status_code = 201
+	return resp
+
 
 
 # Add/update a profile picture for a user
@@ -337,7 +364,6 @@ def delete_user_image(user_id):
 
 
 
-
 # Get a user's information
 @app.route('/user/user_id=<int:user_id>', methods=['GET'])
 def get_user(user_id):
@@ -379,6 +405,7 @@ def login_user():
 	# Get user's profile picture
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
+	# TODO: Return HomeAddress data
 	# Return the relevant data in JSON format
 	data = {'user_id':str(u.key.id()), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
@@ -407,6 +434,7 @@ def login_facebook_user():
 	# Get user's profile picture
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
+	# TODO: Return HomeAddress data
 	# Return the relevant data in JSON format
 	data = {'user_id':str(u.key.id()), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 

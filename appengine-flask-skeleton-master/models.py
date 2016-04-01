@@ -7,14 +7,10 @@ class Verification(ndb.Model):
 	is_verified 			= ndb.BooleanProperty(default=False, indexed=False)
 
 class Delivery_Address(ndb.Model):
-	address_line_1 	= ndb.StringProperty(required=True, indexed=False)
-	address_line_2 	= ndb.StringProperty(indexed=False)
-	city 			= ndb.StringProperty(indexed=False)
-	state 			= ndb.StringProperty(indexed=False)
-	country 		= ndb.StringProperty(indexed=False)
-	zip_code 		= ndb.StringProperty(indexed=False)
-	geo_point 		= ndb.GeoPtProperty(indexed=False)
-
+	name = ndb.StringProperty(indexed=False)
+	google_places_id = ndb.StringProperty(indexed=False)
+	address = ndb.StringProperty(required=True, indexed=False)
+	geo_point = ndb.GeoPtProperty(required=True, indexed=False)
 
 class User(ndb.Model):
 	first_name 					= ndb.StringProperty(required=True, indexed=False)
