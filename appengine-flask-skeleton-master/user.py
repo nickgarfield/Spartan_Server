@@ -124,7 +124,7 @@ def deactivate_user(user_id):# Edit Datastore entity
 
 	# Return response
 	return 'User successfully deactivated', 204
-
+	
 
 
 @app.route('/user/delete_from_search/user_id=<int:user_id>', methods=['DELETE'])
@@ -265,6 +265,7 @@ def update_user(user_id):
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+
 	resp = jsonify(data)
 	resp.status_code = 200
 	logging.info('%s', data)
@@ -405,12 +406,12 @@ def login_user():
 	# Get user's profile picture
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
-	# TODO: Return HomeAddress data
 	# Return the relevant data in JSON format
 	data = {'user_id':str(u.key.id()), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
-			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link,
+			'home_address_name':u.home_address.name, 'home_address_address':u.home_address.address, 'home_address_google_places_id':u.home_address.google_places_id}
 
 	resp = jsonify(data)
 	resp.status_code = 200
@@ -434,12 +435,13 @@ def login_facebook_user():
 	# Get user's profile picture
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
-	# TODO: Return HomeAddress data
 	# Return the relevant data in JSON format
 	data = {'user_id':str(u.key.id()), 'first_name':u.first_name, 'last_name':u.last_name, 
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
-			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link,
+			'home_address_name':u.home_address.name, 'home_address_address':u.home_address.address, 'home_address_google_places_id':u.home_address.google_places_id}
+
 	resp = jsonify(data)
 	resp.status_code = 200
 	logging.info('Successful Facebook login.')
