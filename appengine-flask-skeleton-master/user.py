@@ -4,7 +4,7 @@ import global_vars
 from google.appengine.ext import ndb
 from google.appengine.api import search
 from gcloud import storage
-from models import User, Verification
+from models import User, Listing, Verification
 from error_handlers import InvalidUsage
 
 app = Flask(__name__)
@@ -123,7 +123,7 @@ def deactivate_user(user_id):# Edit Datastore entity
 		abort(500)
 
 	# Return response
-	return 204
+	return 'User successfully deactivated', 204
 
 
 
@@ -136,7 +136,7 @@ def delete_from_search(user_id):
 	except:
 		abort(500)
 
-	return 204
+	return 'User successfully deleted from Search API.', 204
 
 
 
@@ -179,17 +179,17 @@ def reactivate_user(user_id):
 
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
-	# data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
-	# 		'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
-	# 		'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
-	# 		'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+	data = {'user_id':str(user_id), 'first_name':u.first_name, 'last_name':u.last_name, 
+			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
+			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
+			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
 
-	# resp = jsonify(data)
-	# resp.status_code = 200
-	# return resp
+	resp = jsonify(data)
+	resp.status_code = 200
+	return resp
 
 	# Return response
-	return 204
+	# return 204
 
 
 
@@ -333,7 +333,7 @@ def delete_user_image(user_id):
 	u.profile_picture_path = None
 	u.put()
 
-	return 204
+	return 'User profile pciture successfully deleted.', 204
 
 
 

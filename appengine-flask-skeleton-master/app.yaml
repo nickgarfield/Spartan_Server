@@ -51,6 +51,8 @@ handlers:
 - url: /order/.*
   script: order.app
 
+- url: /consistency_check/.*
+  script: consistency_check.app
 
 - url: /.*  # This regex directs all routes to main.app
   script: main.app
