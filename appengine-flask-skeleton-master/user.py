@@ -12,14 +12,14 @@ app = Flask(__name__)
 # Create a new user object and put into Datastore and Search App
 @app.route('/user/create', methods=['POST'])
 def create_user():
-	json_data 		= request.get_json()
-	first_name 		= json_data.get('first_name','')
-	last_name 		= json_data.get('last_name','')
-	email 			= json_data.get('email','')
-	phone_number 	= json_data.get('phone_number','')
-	facebook_id		= json_data.get('facebook_id','')
-	password 		= json_data.get('password','')
-	signup_method 	= json_data.get('signup_method','')
+	json_data = request.get_json()
+	first_name = json_data.get('first_name','')
+	last_name = json_data.get('last_name','')
+	email = json_data.get('email','')
+	phone_number = json_data.get('phone_number','')
+	facebook_id = json_data.get('facebook_id','')
+	password = json_data.get('password','')
+	signup_method = json_data.get('signup_method','')
 
 
 	# If object string is empty '', then set object = None
@@ -74,6 +74,7 @@ def create_user():
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link}
+	
 	resp = jsonify(data)
 	resp.status_code = 201
 	logging.info('%s', data)
