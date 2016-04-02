@@ -16,10 +16,6 @@ def create_listing():
 	json_data 		= request.get_json()
 	user_id 		= json_data.get('user_id','')
 	type_id 		= json_data.get('type_id', '')
-	# FIXME: add support for adding address and having option to save it
-	# 		 as their home address
-	# home_address	= json_data.get('home_address', '') # Send this if user doesn't have a home address saved
-	# save_address	= json_data.get('save_address', '') # True or False
 
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
@@ -53,7 +49,6 @@ def create_listing():
 		listing_key = l.put()
 		listing_id	= str(listing_key.id())
 
-		# FIXME: Uncomment when u.home_address is fully integrated into iOS app
 		# Add listing to Search App
 		new_item = search.Document(
 			doc_id=listing_id,
@@ -72,8 +67,8 @@ def create_listing():
 		abort(500)
 
 	# Return the new Listing data
-	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None,
-			'type_id':type_id, 'status':status, 'item_description':None, 
+	data = {'listing_id':str(listing_id), 'owner_id':str(user_id), 'renter_id':None,
+			'type_id':str(type_id), 'status':status, 'item_description':None, 
 			'rating':rating}
 	resp = jsonify(data)
 	resp.status_code = 201
@@ -238,9 +233,9 @@ def get_listing(listing_id):
 	listing_img_media_links = get_listing_images(listing_id)
 
 	# Return the attributes of the listing
-	data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()),
-			'item_type_id':l.item_type.id(),
-			'renter_id':l.renter.id() if l.renter else None,'status':l.status,
+	data = {'listing_id':str(l.key.id()), 'owner_id':str(l.owner.id()),
+			'item_type_id':str(l.item_type.id()),
+			'renter_id':str(l.renter.id()) if l.renter else None,'status':l.status,
 			'item_description':l.item_description,'rating':l.rating,
 			'image_media_links':listing_img_media_links}
 
@@ -268,9 +263,9 @@ def get_users_listings(user_id):
 	data = []
 	for l in listings:
 		listing_img_media_links = get_listing_images(l.key.id())
-		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()),
-						'item_type_id':l.item_type.id(),
-						'renter_id':l.renter.id() if l.renter else None,'status':l.status,
+		listing_data = {'listing_id':str(l.key.id()), 'owner_id':str(l.owner.id()),
+						'item_type_id':str(l.item_type.id()),
+						'renter_id':str(l.renter.id()) if l.renter else None,'status':l.status,
 						'item_description':l.item_description,'rating':l.rating,
 						'image_media_links':listing_img_media_links}
 		data += [listing_data]
@@ -300,9 +295,9 @@ def get_users_rented_listings(user_id):
 	data = []
 	for l in listings:
 		listing_img_media_links = get_listing_images(l.key.id())
-		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()),
-						'item_type_id':l.item_type.id(),
-						'renter_id':l.renter.id() if l.renter else None,'status':l.status,
+		listing_data = {'listing_id':str(l.key.id()), 'owner_id':str(l.owner.id()),
+						'item_type_id':str(l.item_type.id()),
+						'renter_id':str(l.renter.id()) if l.renter else None,'status':l.status,
 						'item_description':l.item_description,'rating':l.rating,
 						'image_media_links':listing_img_media_links}
 		data += [listing_data]

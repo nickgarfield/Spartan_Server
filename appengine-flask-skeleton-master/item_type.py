@@ -104,7 +104,7 @@ def create_item_type():
 	except:
 		abort(500)
 
-	data = {'item_type_id':type_id, 'name':it.name, 'value':it.value, 
+	data = {'item_type_id':str(type_id), 'name':it.name, 'value':it.value, 
 			'delivery_fee':it.delivery_fee, 'img_path':it.img_path, 'tags':tags}
 
 	resp = jsonify(data)
