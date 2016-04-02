@@ -1551,7 +1551,7 @@ def _get_application_default_credential_GAE():
 def _get_application_default_credential_GCE():
     from oauth2client.contrib.gce import AppAssertionCredentials
 
-    return AppAssertionCredentials([])
+    return AppAssertionCredentials()
 
 
 class AssertionCredentials(GoogleCredentials):
@@ -1616,6 +1616,18 @@ class AssertionCredentials(GoogleCredentials):
                           revoke request.
         """
         self._do_revoke(http_request, self.access_token)
+
+    def sign_blob(self, blob):
+        """Cryptographically sign a blob (of bytes).
+
+        Args:
+            blob: bytes, Message to be signed.
+
+        Returns:
+            tuple, A pair of the private key ID used to sign the blob and
+            the signed contents.
+        """
+        raise NotImplementedError('This method is abstract.')
 
 
 def _RequireCryptoOrDie():

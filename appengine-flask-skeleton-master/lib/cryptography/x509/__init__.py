@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography import utils
 from cryptography.x509.base import (
     Certificate, CertificateBuilder, CertificateRevocationList,
     CertificateRevocationListBuilder,
@@ -19,9 +20,10 @@ from cryptography.x509.extensions import (
     DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
     ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
     InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
-    NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
-    ReasonFlags, SubjectAlternativeName, SubjectKeyIdentifier,
-    UnrecognizedExtension, UnsupportedExtension, UserNotice
+    NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
+    PolicyInformation, ReasonFlags, SubjectAlternativeName,
+    SubjectKeyIdentifier, UnrecognizedExtension, UnsupportedExtension,
+    UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -30,11 +32,18 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, CRLEntryExtensionOID, CRLExtensionOID,
+    AuthorityInformationAccessOID, CRLEntryExtensionOID,
     CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
     ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
 
+
+CRLExtensionOID = utils.deprecated(
+    CRLEntryExtensionOID,
+    __name__,
+    "CRLExtensionOID has been renamed to CRLEntryExtensionOID",
+    utils.DeprecatedIn12
+)
 
 OID_AUTHORITY_INFORMATION_ACCESS = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 OID_AUTHORITY_KEY_IDENTIFIER = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -170,4 +179,5 @@ __all__ = [
     "CRLReason",
     "InvalidityDate",
     "UnrecognizedExtension",
+    "PolicyConstraints",
 ]

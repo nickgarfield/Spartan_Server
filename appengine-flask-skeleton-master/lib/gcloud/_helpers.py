@@ -19,13 +19,14 @@ This module is not part of the public API surface of `gcloud`.
 import calendar
 import datetime
 import os
-from threading import local as Local
+import re
 import socket
 import sys
+from threading import local as Local
 
 from google.protobuf import timestamp_pb2
 import six
-from six.moves.http_client import HTTPConnection  # pylint: disable=F0401
+from six.moves.http_client import HTTPConnection
 
 from gcloud.environment_vars import PROJECT
 
@@ -37,6 +38,16 @@ except ImportError:
 
 _NOW = datetime.datetime.utcnow  # To be replaced by tests.
 _RFC3339_MICROS = '%Y-%m-%dT%H:%M:%S.%fZ'
+_RFC3339_NO_FRACTION = '%Y-%m-%dT%H:%M:%S'
+# datetime.strptime cannot handle nanosecond precision:  parse w/ regex
+_RFC3339_NANOS = re.compile(r"""
+    (?P<no_fraction>
+        \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}  # YYYY-MM-DDTHH:MM:SS
+    )
+    \.                                       # decimal point
+    (?P<nanos>\d{9})                         # nanoseconds
+    Z                                        # Zulu
+""", re.VERBOSE)
 
 
 class _LocalStack(Local):
@@ -300,7 +311,7 @@ def _total_seconds(offset):
 
 
 def _rfc3339_to_datetime(dt_str):
-    """Convert a string to a native timestamp.
+    """Convert a microsecond-precision timetamp to a native datetime.
 
     :type dt_str: str
     :param dt_str: The string to convert.
@@ -310,6 +321,32 @@ def _rfc3339_to_datetime(dt_str):
     """
     return datetime.datetime.strptime(
         dt_str, _RFC3339_MICROS).replace(tzinfo=UTC)
+
+
+def _rfc3339_nanos_to_datetime(dt_str):
+    """Convert a nanosecond-precision timestamp to a native datetime.
+
+    .. note::
+
+       Python datetimes do not support nanosecond precision;  this function
+       therefore truncates such values to microseconds.
+
+    :type dt_str: str
+    :param dt_str: The string to convert.
+
+    :rtype: :class:`datetime.datetime`
+    :returns: The datetime object created from the string.
+    """
+    with_nanos = _RFC3339_NANOS.match(dt_str)
+    if with_nanos is None:
+        raise ValueError(
+            'Timestamp: %r, does not match pattern: %r' % (
+                dt_str, _RFC3339_NANOS.pattern))
+    bare_seconds = datetime.datetime.strptime(
+        with_nanos.group('no_fraction'), _RFC3339_NO_FRACTION)
+    nanos = int(with_nanos.group('nanos'))
+    micros = nanos // 1000
+    return bare_seconds.replace(microsecond=micros, tzinfo=UTC)
 
 
 def _datetime_to_rfc3339(value):
@@ -386,6 +423,45 @@ def _datetime_to_pb_timestamp(when):
     seconds, micros = divmod(ms_value, 10**6)
     nanos = micros * 10**3
     return timestamp_pb2.Timestamp(seconds=seconds, nanos=nanos)
+
+
+def _name_from_project_path(path, project, template):
+    """Validate a URI path and get the leaf object's name.
+
+    :type path: string
+    :param path: URI path containing the name.
+
+    :type project: string
+    :param project: The project associated with the request. It is
+                    included for validation purposes.
+
+    :type template: string
+    :param template: Template regex describing the expected form of the path.
+                     The regex must have two named groups, 'project' and
+                     'name'.
+
+    :rtype: string
+    :returns: Name parsed from ``path``.
+    :raises: :class:`ValueError` if the ``path`` is ill-formed or if
+             the project from the ``path`` does not agree with the
+             ``project`` passed in.
+    """
+    if isinstance(template, str):
+        template = re.compile(template)
+
+    match = template.match(path)
+
+    if not match:
+        raise ValueError('path "%s" did not match expected pattern "%s"' % (
+            path, template.pattern,))
+
+    found_project = match.group('project')
+    if found_project != project:
+        raise ValueError(
+            'Project from client (%s) should agree with '
+            'project from resource(%s).' % (project, found_project))
+
+    return match.group('name')
 
 
 try:

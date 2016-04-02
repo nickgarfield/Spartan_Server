@@ -411,7 +411,21 @@ class Test__rfc3339_to_datetime(unittest2.TestCase):
         from gcloud._helpers import _rfc3339_to_datetime
         return _rfc3339_to_datetime(dt_str)
 
-    def test_it(self):
+    def test_w_bogus_zone(self):
+        year = 2009
+        month = 12
+        day = 17
+        hour = 12
+        minute = 44
+        seconds = 32
+        micros = 123456789
+
+        dt_str = '%d-%02d-%02dT%02d:%02d:%02d.%06dBOGUS' % (
+            year, month, day, hour, minute, seconds, micros)
+        with self.assertRaises(ValueError):
+            self._callFUT(dt_str)
+
+    def test_w_microseconds(self):
         import datetime
         from gcloud._helpers import UTC
 
@@ -425,6 +439,76 @@ class Test__rfc3339_to_datetime(unittest2.TestCase):
 
         dt_str = '%d-%02d-%02dT%02d:%02d:%02d.%06dZ' % (
             year, month, day, hour, minute, seconds, micros)
+        result = self._callFUT(dt_str)
+        expected_result = datetime.datetime(
+            year, month, day, hour, minute, seconds, micros, UTC)
+        self.assertEqual(result, expected_result)
+
+    def test_w_naonseconds(self):
+        year = 2009
+        month = 12
+        day = 17
+        hour = 12
+        minute = 44
+        seconds = 32
+        nanos = 123456789
+
+        dt_str = '%d-%02d-%02dT%02d:%02d:%02d.%09dZ' % (
+            year, month, day, hour, minute, seconds, nanos)
+        with self.assertRaises(ValueError):
+            self._callFUT(dt_str)
+
+
+class Test__rfc3339_nanos_to_datetime(unittest2.TestCase):
+
+    def _callFUT(self, dt_str):
+        from gcloud._helpers import _rfc3339_nanos_to_datetime
+        return _rfc3339_nanos_to_datetime(dt_str)
+
+    def test_w_bogus_zone(self):
+        year = 2009
+        month = 12
+        day = 17
+        hour = 12
+        minute = 44
+        seconds = 32
+        micros = 123456789
+
+        dt_str = '%d-%02d-%02dT%02d:%02d:%02d.%06dBOGUS' % (
+            year, month, day, hour, minute, seconds, micros)
+        with self.assertRaises(ValueError):
+            self._callFUT(dt_str)
+
+    def test_w_microseconds(self):
+
+        year = 2009
+        month = 12
+        day = 17
+        hour = 12
+        minute = 44
+        seconds = 32
+        micros = 123456
+
+        dt_str = '%d-%02d-%02dT%02d:%02d:%02d.%06dZ' % (
+            year, month, day, hour, minute, seconds, micros)
+        with self.assertRaises(ValueError):
+            self._callFUT(dt_str)
+
+    def test_w_naonseconds(self):
+        import datetime
+        from gcloud._helpers import UTC
+
+        year = 2009
+        month = 12
+        day = 17
+        hour = 12
+        minute = 44
+        seconds = 32
+        nanos = 123456789
+        micros = nanos // 1000
+
+        dt_str = '%d-%02d-%02dT%02d:%02d:%02d.%06dZ' % (
+            year, month, day, hour, minute, seconds, nanos)
         result = self._callFUT(dt_str)
         expected_result = datetime.datetime(
             year, month, day, hour, minute, seconds, micros, UTC)
@@ -524,6 +608,41 @@ class Test__datetime_to_pb_timestamp(unittest2.TestCase):
         # microseconds is 1234000 nanoseconds.
         timestamp = Timestamp(seconds=61, nanos=1234000)
         self.assertEqual(self._callFUT(dt_stamp), timestamp)
+
+
+class Test__name_from_project_path(unittest2.TestCase):
+
+    PROJECT = 'PROJECT'
+    THING_NAME = 'THING_NAME'
+    TEMPLATE = r'projects/(?P<project>\w+)/things/(?P<name>\w+)'
+
+    def _callFUT(self, path, project, template):
+        from gcloud._helpers import _name_from_project_path
+        return _name_from_project_path(path, project, template)
+
+    def test_w_invalid_path_length(self):
+        PATH = 'projects/foo'
+        with self.assertRaises(ValueError):
+            self._callFUT(PATH, None, self.TEMPLATE)
+
+    def test_w_invalid_path_segments(self):
+        PATH = 'foo/%s/bar/%s' % (self.PROJECT, self.THING_NAME)
+        with self.assertRaises(ValueError):
+            self._callFUT(PATH, self.PROJECT, self.TEMPLATE)
+
+    def test_w_mismatched_project(self):
+        PROJECT1 = 'PROJECT1'
+        PROJECT2 = 'PROJECT2'
+        PATH = 'projects/%s/things/%s' % (PROJECT1, self.THING_NAME)
+        with self.assertRaises(ValueError):
+            self._callFUT(PATH, PROJECT2, self.TEMPLATE)
+
+    def test_w_valid_data_w_compiled_regex(self):
+        import re
+        template = re.compile(self.TEMPLATE)
+        PATH = 'projects/%s/things/%s' % (self.PROJECT, self.THING_NAME)
+        name = self._callFUT(PATH, self.PROJECT, template)
+        self.assertEqual(name, self.THING_NAME)
 
 
 class _AppIdentity(object):

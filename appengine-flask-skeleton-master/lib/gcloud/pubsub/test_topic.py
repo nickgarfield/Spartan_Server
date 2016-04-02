@@ -336,14 +336,323 @@ class TestTopic(unittest2.TestCase):
         TOPIC_NAME = 'topic_name'
         PROJECT = 'PROJECT'
         CLIENT = _Client(project=PROJECT)
-        topic = self._makeOne(TOPIC_NAME,
-                              client=CLIENT)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
 
         SUBSCRIPTION_NAME = 'subscription_name'
         subscription = topic.subscription(SUBSCRIPTION_NAME)
         self.assertTrue(isinstance(subscription, Subscription))
         self.assertEqual(subscription.name, SUBSCRIPTION_NAME)
         self.assertTrue(subscription.topic is topic)
+
+    def test_list_subscriptions_no_paging(self):
+        from gcloud.pubsub.subscription import Subscription
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        SUB_NAME_1 = 'subscription_1'
+        SUB_PATH_1 = 'projects/%s/subscriptions/%s' % (PROJECT, SUB_NAME_1)
+        SUB_NAME_2 = 'subscription_2'
+        SUB_PATH_2 = 'projects/%s/subscriptions/%s' % (PROJECT, SUB_NAME_2)
+        TOPIC_NAME = 'topic_name'
+        SUBS_LIST = [SUB_PATH_1, SUB_PATH_2]
+        TOKEN = 'TOKEN'
+        RETURNED = {'subscriptions': SUBS_LIST, 'nextPageToken': TOKEN}
+
+        conn = _Connection(RETURNED)
+        CLIENT = _Client(project=PROJECT, connection=conn)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
+
+        # Execute request.
+        subscriptions, next_page_token = topic.list_subscriptions()
+        # Test values are correct.
+        self.assertEqual(len(subscriptions), 2)
+
+        subscription = subscriptions[0]
+        self.assertTrue(isinstance(subscription, Subscription))
+        self.assertEqual(subscriptions[0].name, SUB_NAME_1)
+        self.assertTrue(subscription.topic is topic)
+
+        subscription = subscriptions[1]
+        self.assertTrue(isinstance(subscription, Subscription))
+        self.assertEqual(subscriptions[1].name, SUB_NAME_2)
+        self.assertTrue(subscription.topic is topic)
+
+        self.assertEqual(next_page_token, TOKEN)
+        self.assertEqual(len(conn._requested), 1)
+        req = conn._requested[0]
+        self.assertEqual(req['method'], 'GET')
+        self.assertEqual(req['path'],
+                         '/projects/%s/topics/%s/subscriptions'
+                         % (PROJECT, TOPIC_NAME))
+        self.assertEqual(req['query_params'], {})
+
+    def test_list_subscriptions_with_paging(self):
+        from gcloud.pubsub.subscription import Subscription
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        SUB_NAME_1 = 'subscription_1'
+        SUB_PATH_1 = 'projects/%s/subscriptions/%s' % (PROJECT, SUB_NAME_1)
+        SUB_NAME_2 = 'subscription_2'
+        SUB_PATH_2 = 'projects/%s/subscriptions/%s' % (PROJECT, SUB_NAME_2)
+        TOPIC_NAME = 'topic_name'
+        SUBS_LIST = [SUB_PATH_1, SUB_PATH_2]
+        PAGE_SIZE = 10
+        TOKEN = 'TOKEN'
+        RETURNED = {'subscriptions': SUBS_LIST}
+
+        conn = _Connection(RETURNED)
+        CLIENT = _Client(project=PROJECT, connection=conn)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
+
+        # Execute request.
+        subscriptions, next_page_token = topic.list_subscriptions(
+            page_size=PAGE_SIZE, page_token=TOKEN)
+        # Test values are correct.
+        self.assertEqual(len(subscriptions), 2)
+
+        subscription = subscriptions[0]
+        self.assertTrue(isinstance(subscription, Subscription))
+        self.assertEqual(subscriptions[0].name, SUB_NAME_1)
+        self.assertTrue(subscription.topic is topic)
+
+        subscription = subscriptions[1]
+        self.assertTrue(isinstance(subscription, Subscription))
+        self.assertEqual(subscriptions[1].name, SUB_NAME_2)
+        self.assertTrue(subscription.topic is topic)
+
+        self.assertEqual(next_page_token, None)
+        self.assertEqual(len(conn._requested), 1)
+        req = conn._requested[0]
+        self.assertEqual(req['method'], 'GET')
+        self.assertEqual(req['path'],
+                         '/projects/%s/topics/%s/subscriptions'
+                         % (PROJECT, TOPIC_NAME))
+        self.assertEqual(req['query_params'],
+                         {'pageSize': PAGE_SIZE, 'pageToken': TOKEN})
+
+    def test_list_subscriptions_missing_key(self):
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        TOPIC_NAME = 'topic_name'
+
+        conn = _Connection({})
+        CLIENT = _Client(project=PROJECT, connection=conn)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
+
+        # Execute request.
+        subscriptions, next_page_token = topic.list_subscriptions()
+        # Test values are correct.
+        self.assertEqual(len(subscriptions), 0)
+        self.assertEqual(next_page_token, None)
+
+        self.assertEqual(len(conn._requested), 1)
+        req = conn._requested[0]
+        self.assertEqual(req['method'], 'GET')
+        self.assertEqual(req['path'],
+                         '/projects/%s/topics/%s/subscriptions'
+                         % (PROJECT, TOPIC_NAME))
+        self.assertEqual(req['query_params'], {})
+
+    def test_get_iam_policy_w_bound_client(self):
+        from gcloud.pubsub.iam import OWNER_ROLE, EDITOR_ROLE, VIEWER_ROLE
+        OWNER1 = 'user:phred@example.com'
+        OWNER2 = 'group:cloud-logs@google.com'
+        EDITOR1 = 'domain:google.com'
+        EDITOR2 = 'user:phred@example.com'
+        VIEWER1 = 'serviceAccount:1234-abcdef@service.example.com'
+        VIEWER2 = 'user:phred@example.com'
+        POLICY = {
+            'etag': 'DEADBEEF',
+            'version': 17,
+            'bindings': [
+                {'role': OWNER_ROLE, 'members': [OWNER1, OWNER2]},
+                {'role': EDITOR_ROLE, 'members': [EDITOR1, EDITOR2]},
+                {'role': VIEWER_ROLE, 'members': [VIEWER1, VIEWER2]},
+            ],
+        }
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        TOPIC_NAME = 'topic_name'
+        PATH = 'projects/%s/topics/%s:getIamPolicy' % (PROJECT, TOPIC_NAME)
+
+        conn = _Connection(POLICY)
+        CLIENT = _Client(project=PROJECT, connection=conn)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
+
+        policy = topic.get_iam_policy()
+
+        self.assertEqual(policy.etag, 'DEADBEEF')
+        self.assertEqual(policy.version, 17)
+        self.assertEqual(sorted(policy.owners), [OWNER2, OWNER1])
+        self.assertEqual(sorted(policy.editors), [EDITOR1, EDITOR2])
+        self.assertEqual(sorted(policy.viewers), [VIEWER1, VIEWER2])
+
+        self.assertEqual(len(conn._requested), 1)
+        req = conn._requested[0]
+        self.assertEqual(req['method'], 'GET')
+        self.assertEqual(req['path'], '/%s' % PATH)
+
+    def test_get_iam_policy_w_alternate_client(self):
+        POLICY = {
+            'etag': 'ACAB',
+        }
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        TOPIC_NAME = 'topic_name'
+        PATH = 'projects/%s/topics/%s:getIamPolicy' % (PROJECT, TOPIC_NAME)
+
+        conn1 = _Connection()
+        conn2 = _Connection(POLICY)
+        CLIENT1 = _Client(project=PROJECT, connection=conn1)
+        CLIENT2 = _Client(project=PROJECT, connection=conn2)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT1)
+
+        policy = topic.get_iam_policy(client=CLIENT2)
+
+        self.assertEqual(policy.etag, 'ACAB')
+        self.assertEqual(policy.version, None)
+        self.assertEqual(sorted(policy.owners), [])
+        self.assertEqual(sorted(policy.editors), [])
+        self.assertEqual(sorted(policy.viewers), [])
+
+        self.assertEqual(len(conn1._requested), 0)
+        self.assertEqual(len(conn2._requested), 1)
+        req = conn2._requested[0]
+        self.assertEqual(req['method'], 'GET')
+        self.assertEqual(req['path'], '/%s' % PATH)
+
+    def test_set_iam_policy_w_bound_client(self):
+        from gcloud.pubsub.iam import Policy
+        from gcloud.pubsub.iam import OWNER_ROLE, EDITOR_ROLE, VIEWER_ROLE
+        OWNER1 = 'group:cloud-logs@google.com'
+        OWNER2 = 'user:phred@example.com'
+        EDITOR1 = 'domain:google.com'
+        EDITOR2 = 'user:phred@example.com'
+        VIEWER1 = 'serviceAccount:1234-abcdef@service.example.com'
+        VIEWER2 = 'user:phred@example.com'
+        POLICY = {
+            'etag': 'DEADBEEF',
+            'version': 17,
+            'bindings': [
+                {'role': OWNER_ROLE, 'members': [OWNER1, OWNER2]},
+                {'role': EDITOR_ROLE, 'members': [EDITOR1, EDITOR2]},
+                {'role': VIEWER_ROLE, 'members': [VIEWER1, VIEWER2]},
+            ],
+        }
+        RESPONSE = POLICY.copy()
+        RESPONSE['etag'] = 'ABACABAF'
+        RESPONSE['version'] = 18
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        TOPIC_NAME = 'topic_name'
+        PATH = 'projects/%s/topics/%s:setIamPolicy' % (PROJECT, TOPIC_NAME)
+
+        conn = _Connection(RESPONSE)
+        CLIENT = _Client(project=PROJECT, connection=conn)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
+        policy = Policy('DEADBEEF', 17)
+        policy.owners.add(OWNER1)
+        policy.owners.add(OWNER2)
+        policy.editors.add(EDITOR1)
+        policy.editors.add(EDITOR2)
+        policy.viewers.add(VIEWER1)
+        policy.viewers.add(VIEWER2)
+
+        new_policy = topic.set_iam_policy(policy)
+
+        self.assertEqual(new_policy.etag, 'ABACABAF')
+        self.assertEqual(new_policy.version, 18)
+        self.assertEqual(sorted(new_policy.owners), [OWNER1, OWNER2])
+        self.assertEqual(sorted(new_policy.editors), [EDITOR1, EDITOR2])
+        self.assertEqual(sorted(new_policy.viewers), [VIEWER1, VIEWER2])
+
+        self.assertEqual(len(conn._requested), 1)
+        req = conn._requested[0]
+        self.assertEqual(req['method'], 'POST')
+        self.assertEqual(req['path'], '/%s' % PATH)
+        self.assertEqual(req['data'], {'policy': POLICY})
+
+    def test_set_iam_policy_w_alternate_client(self):
+        from gcloud.pubsub.iam import Policy
+        RESPONSE = {'etag': 'ACAB'}
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        TOPIC_NAME = 'topic_name'
+        PATH = 'projects/%s/topics/%s:setIamPolicy' % (PROJECT, TOPIC_NAME)
+
+        conn1 = _Connection()
+        conn2 = _Connection(RESPONSE)
+        CLIENT1 = _Client(project=PROJECT, connection=conn1)
+        CLIENT2 = _Client(project=PROJECT, connection=conn2)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT1)
+
+        policy = Policy()
+        new_policy = topic.set_iam_policy(policy, client=CLIENT2)
+
+        self.assertEqual(new_policy.etag, 'ACAB')
+        self.assertEqual(new_policy.version, None)
+        self.assertEqual(sorted(new_policy.owners), [])
+        self.assertEqual(sorted(new_policy.editors), [])
+        self.assertEqual(sorted(new_policy.viewers), [])
+
+        self.assertEqual(len(conn1._requested), 0)
+        self.assertEqual(len(conn2._requested), 1)
+        req = conn2._requested[0]
+        self.assertEqual(req['method'], 'POST')
+        self.assertEqual(req['path'], '/%s' % PATH)
+        self.assertEqual(req['data'], {'policy': {}})
+
+    def test_check_iam_permissions_w_bound_client(self):
+        from gcloud.pubsub.iam import OWNER_ROLE, EDITOR_ROLE, VIEWER_ROLE
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        PATH = 'projects/%s/topics/%s:testIamPermissions' % (
+            PROJECT, TOPIC_NAME)
+        ROLES = [VIEWER_ROLE, EDITOR_ROLE, OWNER_ROLE]
+        REQUESTED = {
+            'permissions': ROLES,
+        }
+        RESPONSE = {
+            'permissions': ROLES[:-1],
+        }
+        conn = _Connection(RESPONSE)
+        CLIENT = _Client(project=PROJECT, connection=conn)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT)
+
+        allowed = topic.check_iam_permissions(ROLES)
+
+        self.assertEqual(allowed, ROLES[:-1])
+        self.assertEqual(len(conn._requested), 1)
+        req = conn._requested[0]
+        self.assertEqual(req['method'], 'POST')
+        self.assertEqual(req['path'], '/%s' % PATH)
+        self.assertEqual(req['data'], REQUESTED)
+
+    def test_check_iam_permissions_w_alternate_client(self):
+        from gcloud.pubsub.iam import OWNER_ROLE, EDITOR_ROLE, VIEWER_ROLE
+        TOPIC_NAME = 'topic_name'
+        PROJECT = 'PROJECT'
+        PATH = 'projects/%s/topics/%s:testIamPermissions' % (
+            PROJECT, TOPIC_NAME)
+        ROLES = [VIEWER_ROLE, EDITOR_ROLE, OWNER_ROLE]
+        REQUESTED = {
+            'permissions': ROLES,
+        }
+        RESPONSE = {}
+        conn1 = _Connection()
+        CLIENT1 = _Client(project=PROJECT, connection=conn1)
+        conn2 = _Connection(RESPONSE)
+        CLIENT2 = _Client(project=PROJECT, connection=conn2)
+        topic = self._makeOne(TOPIC_NAME, client=CLIENT1)
+
+        allowed = topic.check_iam_permissions(ROLES, client=CLIENT2)
+
+        self.assertEqual(len(allowed), 0)
+        self.assertEqual(len(conn1._requested), 0)
+        self.assertEqual(len(conn2._requested), 1)
+        req = conn2._requested[0]
+        self.assertEqual(req['method'], 'POST')
+        self.assertEqual(req['path'], '/%s' % PATH)
+        self.assertEqual(req['data'], REQUESTED)
 
 
 class TestBatch(unittest2.TestCase):

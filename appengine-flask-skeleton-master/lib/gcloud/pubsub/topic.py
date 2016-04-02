@@ -19,7 +19,9 @@ import base64
 from gcloud._helpers import _datetime_to_rfc3339
 from gcloud._helpers import _NOW
 from gcloud.exceptions import NotFound
+from gcloud.pubsub._helpers import subscription_name_from_path
 from gcloud.pubsub._helpers import topic_name_from_path
+from gcloud.pubsub.iam import Policy
 from gcloud.pubsub.subscription import Subscription
 
 
@@ -211,6 +213,121 @@ class Topic(object):
         """
         client = self._require_client(client)
         client.connection.api_request(method='DELETE', path=self.path)
+
+    def list_subscriptions(self, page_size=None, page_token=None, client=None):
+        """List subscriptions for the project associated with this client.
+
+        See:
+        https://cloud.google.com/pubsub/reference/rest/v1/projects.topics.subscriptions/list
+
+        :type page_size: int
+        :param page_size: maximum number of topics to return, If not passed,
+                          defaults to a value set by the API.
+
+        :type page_token: string
+        :param page_token: opaque marker for the next "page" of topics. If not
+                           passed, the API will return the first page of
+                           topics.
+
+        :type client: :class:`gcloud.pubsub.client.Client` or ``NoneType``
+        :param client: the client to use.  If not passed, falls back to the
+                       ``client`` stored on the current topic.
+
+        :rtype: tuple, (list, str)
+        :returns: list of :class:`gcloud.pubsub.subscription.Subscription`,
+                  plus a "next page token" string:  if not None, indicates that
+                  more topics can be retrieved with another call (pass that
+                  value as ``page_token``).
+        """
+        client = self._require_client(client)
+        params = {}
+
+        if page_size is not None:
+            params['pageSize'] = page_size
+
+        if page_token is not None:
+            params['pageToken'] = page_token
+
+        path = '/projects/%s/topics/%s/subscriptions' % (
+            self.project, self.name)
+
+        resp = client.connection.api_request(method='GET', path=path,
+                                             query_params=params)
+        subscriptions = []
+        for sub_path in resp.get('subscriptions', ()):
+            sub_name = subscription_name_from_path(sub_path, self.project)
+            subscriptions.append(Subscription(sub_name, self))
+        return subscriptions, resp.get('nextPageToken')
+
+    def get_iam_policy(self, client=None):
+        """Fetch the IAM policy for the topic.
+
+        See:
+        https://cloud.google.com/pubsub/reference/rest/v1/projects.topics/getIamPolicy
+
+        :type client: :class:`gcloud.pubsub.client.Client` or ``NoneType``
+        :param client: the client to use.  If not passed, falls back to the
+                       ``client`` stored on the current batch.
+
+        :rtype: :class:`gcloud.pubsub.iam.Policy`
+        :returns: policy created from the resource returned by the
+                  ``getIamPolicy`` API request.
+        """
+        client = self._require_client(client)
+        path = '%s:getIamPolicy' % (self.path,)
+        resp = client.connection.api_request(method='GET', path=path)
+        return Policy.from_api_repr(resp)
+
+    def set_iam_policy(self, policy, client=None):
+        """Update the IAM policy for the topic.
+
+        See:
+        https://cloud.google.com/pubsub/reference/rest/v1/projects.topics/setIamPolicy
+
+        :type policy: :class:`gcloud.pubsub.iam.Policy`
+        :param policy: the new policy, typically fetched via
+                       :meth:`get_iam_policy` and updated in place.
+
+        :type client: :class:`gcloud.pubsub.client.Client` or ``NoneType``
+        :param client: the client to use.  If not passed, falls back to the
+                       ``client`` stored on the current batch.
+
+        :rtype: :class:`gcloud.pubsub.iam.Policy`
+        :returns: updated policy created from the resource returned by the
+                  ``setIamPolicy`` API request.
+        """
+        client = self._require_client(client)
+        path = '%s:setIamPolicy' % (self.path,)
+        resource = policy.to_api_repr()
+        wrapped = {'policy': resource}
+        resp = client.connection.api_request(
+            method='POST', path=path, data=wrapped)
+        return Policy.from_api_repr(resp)
+
+    def check_iam_permissions(self, permissions, client=None):
+        """Verify permissions allowed for the current user.
+
+        See:
+        https://cloud.google.com/pubsub/reference/rest/v1/projects.topics/testIamPermissions
+
+        :type permissions: list of string
+        :param permissions: list of permissions to be tested
+
+        :type client: :class:`gcloud.pubsub.client.Client` or ``NoneType``
+        :param client: the client to use.  If not passed, falls back to the
+                       ``client`` stored on the current batch.
+
+        :rtype: sequence of string
+        :returns: subset of ``permissions`` allowed by current IAM policy.
+        """
+        client = self._require_client(client)
+        path = '%s:testIamPermissions' % (self.path,)
+        data = {
+            'permissions': list(permissions),
+        }
+        resp = client.connection.api_request(
+            method='POST', path=path, data=data)
+        return resp.get('permissions', ())
 
 
 class Batch(object):

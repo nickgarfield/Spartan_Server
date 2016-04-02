@@ -240,6 +240,8 @@ class ServiceAccountCredentials(AssertionCredentials):
         """
         if private_key_password is None:
             private_key_password = _PASSWORD_DEFAULT
+        if crypt.Signer is not crypt.OpenSSLSigner:
+            raise NotImplementedError(_PKCS12_ERROR)
         signer = crypt.Signer.from_string(private_key_pkcs12,
                                           private_key_password)
         credentials = cls(service_account_email, signer, scopes=scopes)
@@ -318,10 +320,27 @@ class ServiceAccountCredentials(AssertionCredentials):
                                      key_id=self._private_key_id)
 
     def sign_blob(self, blob):
+        """Cryptographically sign a blob (of bytes).
+
+        Implements abstract method
+        :meth:`oauth2client.client.AssertionCredentials.sign_blob`.
+
+        Args:
+            blob: bytes, Message to be signed.
+
+        Returns:
+            tuple, A pair of the private key ID used to sign the blob and
+            the signed contents.
+        """
         return self._private_key_id, self._signer.sign(blob)
 
     @property
     def service_account_email(self):
+        """Get the email for the current service account.
+
+        Returns:
+            string, The email associated with the service account.
+        """
         return self._service_account_email
 
     @property

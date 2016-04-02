@@ -17,7 +17,7 @@
 import json
 from pkg_resources import get_distribution
 import six
-from six.moves.urllib.parse import urlencode  # pylint: disable=F0401
+from six.moves.urllib.parse import urlencode
 
 import httplib2
 
@@ -115,8 +115,12 @@ class Connection(object):
                 :class:`NoneType`
         :returns: A new credentials object that has a scope added (if needed).
         """
-        if credentials and credentials.create_scoped_required():
-            credentials = credentials.create_scoped(scope)
+        if credentials:
+            try:
+                if credentials.create_scoped_required():
+                    credentials = credentials.create_scoped(scope)
+            except AttributeError:
+                pass
         return credentials
 
 
