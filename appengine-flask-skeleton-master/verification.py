@@ -59,6 +59,7 @@ def send_code(user_id):
 	u.phone_number_verification = Verification(code=verification_code)
 	u.put()
 
+	logging.debug('Verification code: %d', verification_code)
 	# Send the verification code to the user's phone number
 	twilio_client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 	message = twilio_client.messages.create(to=u.phone_number, from_="+13093870021", body="Your Bygo verification code is {}".format(verification_code))
