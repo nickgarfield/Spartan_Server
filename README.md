@@ -25,7 +25,7 @@ curl -H "Content-Type: application/json" -X POST -d @json.txt http://molten-unis
 
 ########### USER FUNCTIONS ##############
 ### Create User
-curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"joh\", \"last_name\":\"pls\", \"email\":\"joh@bygo.io\", \"phone_number\":\"928374747\", \"password\":\"\", \"signup_method\":\"Facebook\", \"facebook_id\":\"111222333\"}" http://molten-unison-112921.appspot.com/user/create
+curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"JJ\", \"last_name\":\"Qi\", \"email\":\"jj@bygo.io\", \"phone_number\":\"4569871231\", \"password\":\"hello_world\", \"signup_method\":\"Phone Number\", \"facebook_id\":\"\"}" http://molten-unison-112921.appspot.com/user/create
 
 ### Deactivate User
 curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5717495361044480
@@ -49,7 +49,7 @@ curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_user_image/us
 curl http://molten-unison-112921.appspot.com/user/user_id=5750790484393984
 
 ### Create User Home Address
-curl -H "Content-Type: application/json" -X POST -d @test_jsons/new_delivery_address.json http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5634387206995968
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/new_delivery_address.json http://molten-unison-112921.appspot.com/delivery_address/create/user_id=5722467590995968
 
 ### Delete User Home Address
 curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/user_id=5634387206995968
@@ -58,10 +58,10 @@ curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/u
 curl http://molten-unison-112921.appspot.com/delivery_address/get/user_id=5634387206995968
 
 ### Generate Phone Number Verification Code
-curl http://molten-unison-112921.appspot.com/verification/phone_number/send_code/user_id=5634387206995968
+curl http://molten-unison-112921.appspot.com/verification/phone_number/send_code/user_id=5722467590995968
 
 ### Verify Phone Number
-curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"930888\", \"user_id\":\"5634387206995968\"}" http://molten-unison-112921.appspot.com/verification/phone_number/check_code
+curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"357325\", \"user_id\":\"5722467590995968\"}" http://molten-unison-112921.appspot.com/verification/phone_number/check_code
 
 
 
