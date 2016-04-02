@@ -151,7 +151,7 @@ def create_item_type_tag(type_id):
 	tag 			= json_data.get('tag','')
 
 	try:
-		# Add the Item_Type to the Search API
+		# Get the Item_Type from the Search API
 		index = search.Index(name='Item_Type')
 		doc = index.get(str(type_id))
 	except search.Error:
@@ -161,6 +161,7 @@ def create_item_type_tag(type_id):
 		raise InvalidUsage('Tag already exists for this Item_Type.', 400)
 
 	try:
+		# Add the new tag
 		updated_item = search.Document(
 			doc_id=str(type_id),
 			fields=[search.TextField(name='name', value=doc.field('name').value),
@@ -171,6 +172,37 @@ def create_item_type_tag(type_id):
 
 	logging.info('Item_type tag "%s" successfully added to "%s".', tag, doc.field('name').value)
 	return 'Item_type tag successfully added.', 201
+
+
+
+
+# Function to DELETE a single TAG of an existing item_type
+@app.route('/item_type/delete_tag/item_type_id=<int:type_id>/tag=<tag>', methods=['DELETE'])
+def delete_item_type_tag(type_id, tag):
+	try:
+		# Get the Item_Type from the Search API
+		index = search.Index(name='Item_Type')
+		doc = index.get(str(type_id))
+	except search.Error:
+		raise ServerError('Search API get failed.', 500)
+
+	if not tag in doc.field('tags').value:
+		raise InvalidUsage('Tag does not exist for this Item_Type.', 400)
+
+	try:
+		# Delete the tag
+		updated_item = search.Document(
+			doc_id=str(type_id),
+			fields=[search.TextField(name='name', value=doc.field('name').value),
+					search.TextField(name='tags', value=doc.field('tags').value.replace(tag, '').strip())])
+		index.put(updated_item)
+	except search.Error:
+		raise ServerError('Search API put failed.', 500)
+
+	logging.info('Item_type tag "%s" successfully deleted from "%s".', tag, doc.field('name').value)
+	return 'Item_type tag successfully deleted.', 204
+
+
 
 
 

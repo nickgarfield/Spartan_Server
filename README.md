@@ -103,6 +103,8 @@ curl -X DELETE http://molten-unison-112921.appspot.com/item_type/delete/item_typ
 ### Create new tag for Item_Type
 curl -H "Content-Type: application/json" -X POST -d "{\"tag\":\"Sony\"}"  http://molten-unison-112921.appspot.com/item_type/create_tag/item_type_id=5681777339269120
 
+### Delete tag for Item_Type
+curl -X DELETE  http://molten-unison-112921.appspot.com/item_type/delete_tag/item_type_id=5681777339269120/tag=Sony
 
 
 
