@@ -10,31 +10,6 @@ from error_handlers import InvalidUsage
 app = Flask(__name__)
 
 
-'''
-1. Renter chooses an item and rental rate
-2. Renter tap's "Rent" button 
-3. Renter Fills out available times and locations to pick up item
-4. Create proposed Rent_Event. Create proposed Meeting_Event
-5. Owner is notified of proposed Rent_Event
-6. Owner is shown menu with data combining proposed Rent_Event and proposed Meeting_Event
-7. Owner chooses time and location.
-8. Owner taps "Accept"
-9. Update Rent_Event to "Scheduled_Start"
-10. Update Meeting_Event to "Scheduled" with time and location
-11. Notify Renter of change of status
-12. Present Renter and Owner with Scheduled Meeting_Event
-13. At meeting, ask for confirmation from Renter and Owner
-14. Update Rent_event to "On Going"
-15. Update Meeting_Event to "Concluded"
-16. Either Renter or Owner creates Meeting_Request to return item
-17. New Meeting_Event created with status "Proposed"
-18. Other party is notified of the request and fills out the time and location
-19. Meeting_Event updated to status "Scheduled"
-20. Rent_Event updated to "Scheduled End"
-21. Confirmation sent to proposing party 
-22. 
-'''
-
 @app.route('/rent_event/propose/listing_id=<int:listing_id>/renter_id=<int:renter_id>', methods=['POST'])
 def propose_rent_request(listing_id,renter_id):
 	json_data 						= request.get_json()

@@ -51,6 +51,9 @@ handlers:
 - url: /order/.*
   script: order.app
 
+- url: /notification/.*
+  script: notification.app
+
 - url: /consistency_check/.*
   script: consistency_check.app
 
