@@ -27,7 +27,6 @@ curl -H "Content-Type: application/json" -X POST -d @json.txt http://molten-unis
 ### Create User
 curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"joh\", \"last_name\":\"pls\", \"email\":\"joh@bygo.io\", \"phone_number\":\"928374747\", \"password\":\"\", \"signup_method\":\"Facebook\", \"facebook_id\":\"111222333\"}" http://molten-unison-112921.appspot.com/user/create
 
-
 ### Deactivate User
 curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5717495361044480
 
@@ -57,6 +56,12 @@ curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/u
 
 ### Get User Home Address
 curl http://molten-unison-112921.appspot.com/delivery_address/get/user_id=5634387206995968
+
+### Generate Phone Number Verification Code
+curl http://molten-unison-112921.appspot.com/verification/phone_number/send_code/user_id=5634387206995968
+
+### Verify Phone Number
+curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"930888\", \"user_id\":\"5634387206995968\"}" http://molten-unison-112921.appspot.com/verification/phone_number/check_code
 
 
 

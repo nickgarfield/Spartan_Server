@@ -3,10 +3,11 @@ from flask import request
 from flask import json
 from flask import jsonify
 from random import randint
+import logging
 from twilio.rest import TwilioRestClient
 from google.appengine.ext import ndb
 from models import User, Verification
-from main import InvalidUsage
+from error_handlers import InvalidUsage, ServerError
 import datetime
 
 
@@ -62,7 +63,8 @@ def send_code(user_id):
 	twilio_client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 	message = twilio_client.messages.create(to=u.phone_number, from_="+13093870021", body="Your Bygo verification code is {}".format(verification_code))
 
-	return 200
+	logging.info('Phone verification code %d successfully sent to %d.', verification_code, u.phone_number)
+	return 'Phone verification code successfully sent.', 200
 
 
 
@@ -70,16 +72,16 @@ def send_code(user_id):
 @app.route('/verification/phone_number/check_code', methods=['POST'])
 def check_code():
 	# Get the request data
-	json_data = request.get_json()
-	verification_code = int(json_data.get('verification_code',''))
-	user_id = int(json_data.get('user_id',''))
+	json_data 			= request.get_json()
+	verification_code 	= int(json_data.get('verification_code',''))
+	user_id 			= int(json_data.get('user_id',''))
 
 	# Check if the user_id is valid
 	u = User.get_by_id(user_id)
 	if u is None:
 		raise InvalidUsage('UserID does not match any existing user', status_code=400)
 
-	# Check is there is a valid distribution time
+	# Check if there is a valid distribution time
 	if u.phone_number_verification is None:
 		raise InvalidUsage('No verification code has been sent', status_code=400)
 
@@ -100,14 +102,21 @@ def check_code():
 
 	# Check if the verification code matches the expected code
 	if u.phone_number_verification.code != verification_code:
-		u.phone_number_verification = None
-		u.put()
+		# Do we need to delete the verification code if they accidentally
+		# entered it wrong the first time?
+		# u.phone_number_verification = None
+		# u.put()
 		raise InvalidUsage('Verification code did not match', status_code=400)
 
 	# Mark the user's phone number as verified
-	u.phone_number_verification.is_verified = True
-	u.put()
-	return 'Success', 200
+	try:
+		u.phone_number_verification.is_verified = True
+		u.put()
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
+
+	logging.info('User phone number successfully verified.')
+	return 'User phone number successfully verified.', 200
 
 
 ### Server Error Handlers ###
@@ -115,6 +124,14 @@ def check_code():
 def handle_invalid_usage(error):
 	response = jsonify(error.to_dict())
 	response.status_code = error.status_code
+	logging.exception(error)
+	return response
+
+@app.errorhandler(ServerError)
+def handle_server_error(error):
+	response = jsonify(error.to_dict())
+	response.status_code = error.status_code
+	logging.exception(error)
 	return response
 
 @app.errorhandler(404)
