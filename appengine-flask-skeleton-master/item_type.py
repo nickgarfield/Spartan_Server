@@ -145,26 +145,32 @@ def delete_item_type(type_id):
 
 
 # Function to ADD a single TAG to an existing item_type
-# @app.route('/item_type/create_tag/item_type_id=<int:type_id>', methods=['POST'])
-# def create_item_type_tag(type_id):
-# 	json_data 		= request.get_json()
-# 	tag 			= json_data.get('tag','')
+@app.route('/item_type/create_tag/item_type_id=<int:type_id>', methods=['POST'])
+def create_item_type_tag(type_id):
+	json_data 		= request.get_json()
+	tag 			= json_data.get('tag','')
 
+	try:
+		# Add the Item_Type to the Search API
+		index = search.Index(name='Item_Type')
+		doc = index.get(str(type_id))
+	except search.Error:
+		raise ServerError('Search API get failed.', 500)
 
+	if tag in doc.field('tags').value:
+		raise InvalidUsage('Tag already exists for this Item_Type.', 400)
 
-# 	try:
-# 		# Add the Item_Type to the Search API
-# 		new_item = search.Document(
-# 			doc_id=type_id,
-# 			fields=[search.TextField(name='name', value=name),
-# 					search.TextField(name='tags', value=tags)])
-# 		index = search.Index(name='Item_Type')
-# 		index.put(new_item)
-# 	except:
-# 		abort(500)
+	try:
+		updated_item = search.Document(
+			doc_id=str(type_id),
+			fields=[search.TextField(name='name', value=doc.field('name').value),
+					search.TextField(name='tags', value=doc.field('tags').value+' '+tag)])
+		index.put(updated_item)
+	except search.Error:
+		raise ServerError('Search API put failed.', 500)
 
-
-# 	return 'Item_type successfully added.', 201
+	logging.info('Item_type tag "%s" successfully added to "%s".', tag, doc.field('name').value)
+	return 'Item_type tag successfully added.', 201
 
 
 
