@@ -1,0 +1,20 @@
+[
+	{
+		"name": "Xbox One Console",
+		"value": 350.0,
+		"delivery_fee": 5.0,
+		"tags": "Xbox One Console"
+	}, 
+	{
+		"name": "PlayStation 4 Console",
+		"value": 350.0,
+		"delivery_fee": 5.0,
+		"tags": "PlayStation 4 Console"
+	},
+	{
+		"name": "Nintendo Wii Console",
+		"value": 220.0,
+		"delivery_fee": 5.0,
+		"tags": "Nintendo Wii Console"
+	}
+]

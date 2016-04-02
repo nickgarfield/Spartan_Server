@@ -11,7 +11,7 @@ from error_handlers import InvalidUsage
 
 app = Flask(__name__)
 
-# curl https://bygo-client-server.appspot.com/consistency_check/users
+# curl -X DELETE https://bygo-client-server.appspot.com/consistency_check/users
 @app.route('/consistency_check/users', methods=['DELETE'])
 def user_consistency_check():
 	index = search.Index(name='User')
@@ -64,7 +64,7 @@ def user_consistency_check():
 
 
 
-# curl https://bygo-client-server.appspot.com/consistency_check/listings
+# curl -X DELETE https://bygo-client-server.appspot.com/consistency_check/listings
 @app.route('/consistency_check/listings', methods=['DELETE'])
 def listing_consistency_check():
 	index = search.Index(name='Listing')
@@ -104,7 +104,7 @@ def listing_consistency_check():
 
 
 
-# curl https://bygo-client-server.appspot.com/consistency_check/item_types
+# curl -X DELETE https://bygo-client-server.appspot.com/consistency_check/item_types
 @app.route('/consistency_check/item_types', methods=['DELETE'])
 def item_type_consistency_check():
 	index = search.Index(name='Item_Type')

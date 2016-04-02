@@ -77,7 +77,10 @@ def create_item_type():
 	value 			= json_data.get('value','')
 	delivery_fee	= json_data.get('delivery_fee','')
 	tags 			= json_data.get('tags','')
-	it = Item_Type(name=name, delivery_fee=delivery_fee, value=value)
+	
+	qry = Item_Type.query(Item_Type.name == name).fetch(keys_only=True)
+	if qry is None:
+		raise InvalidUsage('Item_Type already exists!', 400)
 
 	try:
 		# Add the Item_Type to the Datastore
@@ -103,6 +106,7 @@ def create_item_type():
 
 	data = {'item_type_id':type_id, 'name':it.name, 'value':it.value, 
 			'delivery_fee':it.delivery_fee, 'img_path':it.img_path, 'tags':tags}
+
 	resp = jsonify(data)
 	resp.status_code = 201
 	logging.info('Item_type successfully added: %s', data)
