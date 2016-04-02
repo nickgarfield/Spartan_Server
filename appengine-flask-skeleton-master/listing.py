@@ -1,11 +1,11 @@
 from flask import Flask,request,json,jsonify,Response,abort
-import datetime, time
+import logging
 import global_vars
 from google.appengine.ext import ndb
 from google.appengine.api import search
 from gcloud import storage
-from models import User,Listing,Item_Type
-from error_handlers import InvalidUsage
+from models import User, Listing, Item_Type
+from error_handlers import InvalidUsage, ServerError
 
 app = Flask(__name__)
 
@@ -13,9 +13,13 @@ app = Flask(__name__)
 # Create a new listing object and put into Datastore and Search App
 @app.route('/listing/create', methods=['POST'])
 def create_listing():
-	json_data 	= request.get_json()
-	user_id 	= json_data.get('user_id','')
-	type_id 	= json_data.get('type_id', '')
+	json_data 		= request.get_json()
+	user_id 		= json_data.get('user_id','')
+	type_id 		= json_data.get('type_id', '')
+	# FIXME: add support for adding address and having option to save it
+	# 		 as their home address
+	# home_address	= json_data.get('home_address', '') # Send this if user doesn't have a home address saved
+	# save_address	= json_data.get('save_address', '') # True or False
 
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
@@ -43,10 +47,9 @@ def create_listing():
 	status = 'Available'
 	rating = -1.0
 
-	# Add listing to Datastore
-	l = Listing(owner=user_key, item_type=type_key, status=status, rating=rating)
-
 	try:
+		# Add listing to Datastore
+		l = Listing(owner=user_key, item_type=type_key, status=status, rating=rating)
 		listing_key = l.put()
 		listing_id	= str(listing_key.id())
 
@@ -61,13 +64,20 @@ def create_listing():
 		index = search.Index(name='Listing')
 		index.put(new_item)
 
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
+	except search.Error:
+		raise ServerError('Search API put failed.', 500)
 	except:
 		abort(500)
 
 	# Return the new Listing data
-	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None, 'type_id':type_id, 'status':status, 'item_description':None, 'rating':rating}
+	data = {'listing_id':listing_id, 'owner_id':user_id, 'renter_id':None,
+			'type_id':type_id, 'status':status, 'item_description':None, 
+			'rating':rating}
 	resp = jsonify(data)
 	resp.status_code = 201
+	logging.info('Listing successfully created: %s', data)
 	return resp
 
 
@@ -87,17 +97,18 @@ def delete_listing(listing_id):
 	# Add the updated listing status to the Datastore
 	try:
 		l.put()
-	except:
-		abort(500)
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
 
 	# Delete Search App entity
 	try:
 		index = search.Index(name='Listing')
 		index.delete(str(listing_id))
-	except:
-		abort(500)
+	except search.Error:
+		raise ServerError('Search API put failed.', 500)
 
 	# Return response
+	logging.info('Listing successfully deleted: %d', listing_id)
 	return 'Listing successfully deleted.', 204
 
 
@@ -122,13 +133,17 @@ def update_listing(listing_id):
 	# Add the updated item to the Datastore
 	try:
 		l.put()
-	except:
-		abort(500)
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
 
-	# Return the attributes of the new item
-	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'type_id':str(l.item_type.id()), 'status':status, 'item_description':item_description, 'rating':l.rating}
+	# Return the attributes of the updated item
+	data = {'listing_id':str(listing_id), 'owner_id':str(l.owner.id()),
+			'renter_id':str(l.renter.id()) if l.renter else None,
+			'type_id':str(l.item_type.id()), 'status':status,
+			'item_description':item_description, 'rating':l.rating}
 	resp = jsonify(data)
 	resp.status_code = 200
+	logging.info('Listing successfully updated: %s', data)
 	return resp
 
 
@@ -164,24 +179,29 @@ def create_listing_image(listing_id):
 
 	# Add path to list of img_paths
 	try:
-		l.listing_img_paths.append(path)
+		if path not in l.listing_img_paths:
+			l.listing_img_paths.append(path)
 		l.put()
-	except:
-		abort(500)
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
 
-	resp = jsonify({'image_path':path, 'image_media_link':image.media_link})
+	image_data = {'image_path':path, 'image_media_link':image.media_link}
+	resp = jsonify(image_data)
 	resp.status_code = 201
+	logging.info('Listing image successfully uploaded: %s', image_data)
 	return resp
 
 
 
 # Delete a listing image
-@app.route('/listing/delete_listing_image/listing_id=<int:listing_id>/path=<path:path>', methods=['DELETE'])
-def delete_listing_image(listing_id,path):
+@app.route('/listing/delete_listing_image/listing_id=<int:listing_id>/image=<int:image_num>', methods=['DELETE'])
+def delete_listing_image(listing_id,image_num):
 	# Check if listing exists
 	l = Listing.get_by_id(listing_id)
 	if l is None:
 		raise InvalidUsage('Listing does not exist!', status_code=400)
+
+	path = l.listing_img_paths[image_num]
 
 	# Create client for interfacing with Cloud Storage API
 	client = storage.Client()
@@ -192,17 +212,16 @@ def delete_listing_image(listing_id,path):
 
 	# Delete path from list of img_paths
 	try:
-		if path in l.listing_img_paths:
+		while path in l.listing_img_paths:
 			l.listing_img_paths.remove(path)
-		else:
-			raise InvalidUsage('Image does not exist!', status_code=400)
 		
 		l.put()
 	
-	except:
-		abort(500)
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
 
 	# Return response
+	logging.info('Listing image successfully deleted: %s', path)
 	return 'Listing image successfully deleted.', 204
 
 
@@ -218,12 +237,16 @@ def get_listing(listing_id):
 
 	listing_img_media_links = get_listing_images(listing_id)
 
-	# Return the attributes of the new item
-	data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'status':l.status,
-			'item_description':l.item_description, 'rating':l.rating, 'image_media_links':listing_img_media_links}
+	# Return the attributes of the listing
+	data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()),
+			'item_type_id':l.item_type.id(),
+			'renter_id':l.renter.id() if l.renter else None,'status':l.status,
+			'item_description':l.item_description,'rating':l.rating,
+			'image_media_links':listing_img_media_links}
 
 	resp = jsonify(data)
 	resp.status_code = 200
+	logging.info('Listing info successfully retrieved: %s', data)
 	return resp
 
 
@@ -244,13 +267,18 @@ def get_users_listings(user_id):
 	# Parse data
 	data = []
 	for l in listings:
-		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'status':l.status,
-			'item_description':l.item_description, 'rating':l.rating, 'image_media_links':get_listing_images(l.key.id())}
+		listing_img_media_links = get_listing_images(l.key.id())
+		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()),
+						'item_type_id':l.item_type.id(),
+						'renter_id':l.renter.id() if l.renter else None,'status':l.status,
+						'item_description':l.item_description,'rating':l.rating,
+						'image_media_links':listing_img_media_links}
 		data += [listing_data]
 
 	# Return response
 	resp = jsonify({'listings_data':data})
 	resp.status_code = 200
+	logging.info('Retrieved listings: %s', data)
 	return resp
 
 
@@ -271,13 +299,18 @@ def get_users_rented_listings(user_id):
 	# Parse data
 	data = []
 	for l in listings:
-		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()), 'renter_id':str(l.renter.id()) if l.renter else None, 'status':l.status,
-			'item_description':l.item_description, 'rating':l.rating, 'image_media_links':get_listing_images(l.key.id())}
+		listing_img_media_links = get_listing_images(l.key.id())
+		listing_data = {'listing_id':l.key.id(), 'owner_id':str(l.owner.id()),
+						'item_type_id':l.item_type.id(),
+						'renter_id':l.renter.id() if l.renter else None,'status':l.status,
+						'item_description':l.item_description,'rating':l.rating,
+						'image_media_links':listing_img_media_links}
 		data += [listing_data]
 
 	# Return response
 	resp = jsonify({'listings_data':data})
 	resp.status_code = 200
+	logging.info('Retrieved listings: %s', data)
 	return resp
 
 
@@ -301,6 +334,14 @@ def get_listing_images(listing_id):
 def handle_invalid_usage(error):
 	response = jsonify(error.to_dict())
 	response.status_code = error.status_code
+	logging.exception(error)
+	return response
+
+@app.errorhandler(ServerError)
+def handle_server_error(error):
+	response = jsonify(error.to_dict())
+	response.status_code = error.status_code
+	logging.exception(error)
 	return response
 
 @app.errorhandler(404)

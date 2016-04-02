@@ -67,7 +67,7 @@ curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"93
 
 ########### LISTING FUNCTIONS ##############
 ### Create Listing
-curl -H "Content-Type: application/json" -X POST -d "{\"category_id\":\"5713573250596864\", \"name\":\"Garbage Headphones\", \"item_description\":\"This is a test desc.\", \"total_value\":\"75\", \"hourly_rate\":\"7.5\", \"daily_rate\":\"15\", \"weekly_rate\":\"30\"}" http://molten-unison-112921.appspot.com/listing/create/user_id=5752571553644544
+curl -H "Content-Type: application/json" -X POST -d "{\"user_id\":\"5634387206995968\", \"type_id\":\"5639574185312256\"}" http://molten-unison-112921.appspot.com/listing/create
 
 ### Get suggested rates for a listing given its total value
 curl http://molten-unison-112921.appspot.com/listing/suggested_rates/total_value=95.5
@@ -79,19 +79,19 @@ curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id
 curl -H "Content-Type: application/json" -X POST -d "{\"category_id\":\"5713573250596864\", \"name\":\"Knockoff Headphones\", \"item_description\":\"I AM A LIAR\", \"total_value\":\"75\", \"hourly_rate\":\"7.5\", \"daily_rate\":\"15\", \"weekly_rate\":\"30\", \"status\":\"Unlisted\"}" http://molten-unison-112921.appspot.com/listing/update/listing_id=5749563331706880
 
 ### Add listing image
-curl -X POST -F "filename=belt.jpg" -F "userfile=@C:/Users/Sayan/Desktop/8-4-10-logitech60037.jpg" http://molten-unison-112921.appspot.com/listing/new_listing_image/listing_id=5657382461898752
+curl -X POST -F "filename=ps4.jpg" -F "userfile=@C:/Users/Sayan/Desktop/ps4-634334.jpg" http://molten-unison-112921.appspot.com/listing/create_listing_image/listing_id=5747610597982208
 
 ### Delete listing image
 curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete_listing_image/path=5682617542246400/40mmOLChntSglLp2686GovBlkSnp-2.jpg
 
 ### Get a listing's data
-curl http://molten-unison-112921.appspot.com/listing/get_info/listing_id=5657382461898752
+curl http://molten-unison-112921.appspot.com/listing/listing_id=5747610597982208
 
 ### Get User's Listings (user == owner)
-curl http://molten-unison-112921.appspot.com/listing/get_listings/user_id=5752571553644544
+curl http://molten-unison-112921.appspot.com/listing/get_users_listings/user_id=5634387206995968
 
 ### Get User's Rented Listings (user == renter)
-curl http://molten-unison-112921.appspot.com/listing/get_rented_listings/user_id=5752571553644544
+curl http://molten-unison-112921.appspot.com/listing/get_users_rented_listings/user_id=5634387206995968
 
 
 
