@@ -8,8 +8,8 @@ from error_handlers import InvalidUsage
 
 app = Flask(__name__)
 
-kGALLERY_WITH_TITLE_CELL = kGALLERY_WITH_TITLE_CELL
-kITEM_TYPE_CELL = kITEM_TYPE_CELL
+kGALLERY_WITH_TITLE_CELL = 0
+kITEM_TYPE_CELL = 1
 kCREATE_NEW_LISTING_CELL = 2
 
 
