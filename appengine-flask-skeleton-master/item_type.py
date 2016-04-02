@@ -77,10 +77,6 @@ def create_item_type():
 	value 			= json_data.get('value','')
 	delivery_fee	= json_data.get('delivery_fee','')
 	tags 			= json_data.get('tags','')
-	
-	qry = Item_Type.query(Item_Type.name == name).fetch(keys_only=True)
-	if qry is None:
-		raise InvalidUsage('Item_Type already exists!', 400)
 
 	try:
 		# Add the Item_Type to the Datastore
@@ -150,9 +146,7 @@ def delete_item_type(type_id):
 # 	json_data 		= request.get_json()
 # 	tag 			= json_data.get('tag','')
 
-# 	qry = Item_Type.query(Item_Type.name == name).fetch(keys_only=True)
-# 	if qry is None:
-# 		raise InvalidUsage('No matching item_type found!', 400)
+
 
 # 	try:
 # 		# Add the Item_Type to the Search API
