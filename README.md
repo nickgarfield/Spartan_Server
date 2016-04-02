@@ -113,10 +113,10 @@ curl -X DELETE  http://molten-unison-112921.appspot.com/item_type/delete_tag/ite
 curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/users
 
 ### Listing Consistency Check
-curl https://molten-unison-112921.appspot.com/consistency_check/listings
+curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/listings
 
 ### Item Type Consistency Check
-# curl https://molten-unison-112921.appspot.com/consistency_check/item_types
+curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/item_types
 
 
 
