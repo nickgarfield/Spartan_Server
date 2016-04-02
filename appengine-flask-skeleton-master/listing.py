@@ -190,7 +190,7 @@ def create_listing_image(listing_id):
 
 # Delete a listing image
 @app.route('/listing/delete_listing_image/listing_id=<int:listing_id>/image=<int:image_num>', methods=['DELETE'])
-def delete_listing_image(listing_id,image_num):
+def delete_listing_image(listing_id, image_num):
 	# Check if listing exists
 	l = Listing.get_by_id(listing_id)
 	if l is None:
@@ -264,7 +264,7 @@ def get_users_listings(user_id):
 	for l in listings:
 		listing_img_media_links = get_listing_images(l.key.id())
 		listing_data = {'listing_id':str(l.key.id()), 'owner_id':str(l.owner.id()),
-						'item_type_id':str(l.item_type.id()),
+						'type_id':str(l.item_type.id()),
 						'renter_id':str(l.renter.id()) if l.renter else None,'status':l.status,
 						'item_description':l.item_description,'rating':l.rating,
 						'image_media_links':listing_img_media_links}
@@ -296,7 +296,7 @@ def get_users_rented_listings(user_id):
 	for l in listings:
 		listing_img_media_links = get_listing_images(l.key.id())
 		listing_data = {'listing_id':str(l.key.id()), 'owner_id':str(l.owner.id()),
-						'item_type_id':str(l.item_type.id()),
+						'type_id':str(l.item_type.id()),
 						'renter_id':str(l.renter.id()) if l.renter else None,'status':l.status,
 						'item_description':l.item_description,'rating':l.rating,
 						'image_media_links':listing_img_media_links}
