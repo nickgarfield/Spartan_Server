@@ -145,6 +145,7 @@ def delete_item_type(type_id):
 
 
 # Function to ADD a single TAG to an existing item_type
+# curl -H "Content-Type: application/json" -X POST -d "{\"tag\":\"Sony\"}"  https://bygo-client-server.appspot.com/item_type/create_tag/item_type_id=5681777339269120
 @app.route('/item_type/create_tag/item_type_id=<int:type_id>', methods=['POST'])
 def create_item_type_tag(type_id):
 	json_data 		= request.get_json()
@@ -177,6 +178,7 @@ def create_item_type_tag(type_id):
 
 
 # Function to DELETE a single TAG of an existing item_type
+# curl -X DELETE  https://bygo-client-server.appspot.com/item_type/delete_tag/item_type_id=<type_id>/tag=<tag>
 @app.route('/item_type/delete_tag/item_type_id=<int:type_id>/tag=<tag>', methods=['DELETE'])
 def delete_item_type_tag(type_id, tag):
 	try:
@@ -206,7 +208,7 @@ def delete_item_type_tag(type_id, tag):
 
 
 
-# To create 
+# To add an image for the Item_Type
 # curl -F "userfile=@PlayStation_4_Console.jpg" https://bygo-client-server.appspot.com/item_type/create_image/item_type_id=5629652273987584
 @app.route('/item_type/create_image/item_type_id=<int:type_id>', methods=['POST'])
 def create_item_type_image(type_id):
@@ -242,6 +244,14 @@ def create_item_type_image(type_id):
 
 
 
+# To delete an image for the Item_Type
+# It's easier just to go to the buckets page and manually delete it..
+# https://console.cloud.google.com/storage/browser
+
+
+
+# Function that returns data about a specified Item_Type
+# curl https://bygo-client-server.appspot.com/item_type/get/type_id=<int:type_id>
 @app.route('/item_type/get/type_id=<int:type_id>', methods=['GET'])
 def get_item_type(type_id):
 
@@ -260,7 +270,9 @@ def get_item_type(type_id):
 	return resp
 
 
-# Return an Item_Type's image links
+
+
+# Helper function to return an Item_Type's image links
 def get_item_type_images(type_id):	
 	client = storage.Client()
 	bucket = client.get_bucket(global_vars.ITEM_TYPE_IMG_BUCKET)
