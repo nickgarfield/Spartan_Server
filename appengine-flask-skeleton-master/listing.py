@@ -20,23 +20,27 @@ def create_listing():
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 	user_key = ndb.Key('User', int(user_id))
 
 	# Check to see if the tag exists
 	item_type = Item_Type.get_by_id(int(type_id))
 	if item_type is None:
-		raise InvalidUsage('TagID does not match any existing tag', status_code=400)
+		raise InvalidUsage('Item type not found', status_code=400)
 	type_key = ndb.Key('Item_Type', int(type_id))
-
 
 	# Check to see if the user has a home address
 	if u.home_address is None:
-		raise InvalidUsage('User does not have a home address', status_code=400)
+		raise InvalidUsage('Home address not found', status_code=400)
+
+
 
 	# Check to see if the phone number is verified
+	if u.phone_number is None:
+		raise InvalidUsage('Phone number not found', status_code=400)
+
 	if u.phone_number_verification is None or not u.phone_number_verification.is_verified:
-		raise InvalidUsage('User does not have a verified phone number', status_code=400)
+		raise InvalidUsage('Phone number not verified', status_code=400)
 
 
 	# Set default listing data
@@ -338,6 +342,12 @@ def handle_server_error(error):
 	response.status_code = error.status_code
 	logging.exception(error)
 	return response
+
+@app.errorhandler(400)
+def handle_user_error(e):
+	resp = jsonify(e.to_dict())
+	resp.status_code = e.status_code
+	return resp
 
 @app.errorhandler(404)
 def page_not_found(e):
