@@ -297,6 +297,7 @@ def update_home_address(user_id):
 	data = {'home_address_address':address, 'home_address_name':name, 'home_address_google_places_id':google_places_id}
 	resp = jsonify(data)
 	resp.status_code = 201
+	logging.info('User home address successfully created: %s', data)
 	return resp
 
 
