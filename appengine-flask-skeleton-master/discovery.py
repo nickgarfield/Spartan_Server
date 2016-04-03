@@ -17,9 +17,9 @@ kCREATE_NEW_LISTING_CELL = 2
 def get_default_home_page_data():
 
 	layout_data = [
-	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some Games', 'item_type_ids':['5629652273987584', '5685925472370688', '5695159920492544']}, 
+	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some Games', 'item_type_ids':['4886025126019072', '5076271507701760', '5204331057905664']}, 
 	{'type':kCREATE_NEW_LISTING_CELL},
-	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some More Games', 'item_type_ids':['5695159920492544', '5685925472370688', '5629652273987584']}]
+	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some More Games', 'item_type_ids':['5204331057905664', '5076271507701760', '4886025126019072']}]
 
 	resp = jsonify({'layout_data': layout_data})
 	resp.status_code = 200
@@ -34,7 +34,7 @@ def search_item_types():
 
 	json_data = request.get_json()
 	query = json_data.get('query', '')
-	layout_data = [{'type':kITEM_TYPE_CELL, 'id':'5695159920492544'}, {'type':kITEM_TYPE_CELL, 'id':'5685925472370688'}]
+	layout_data = [{'type':kITEM_TYPE_CELL, 'id':'4886025126019072'}, {'type':kITEM_TYPE_CELL, 'id':'5076271507701760'}]
 
 	resp = jsonify({'layout_data': layout_data})
 	resp.status_code = 200

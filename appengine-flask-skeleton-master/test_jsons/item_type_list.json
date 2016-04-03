@@ -3,18 +3,18 @@
 		"name": "Xbox One Console",
 		"value": 350.0,
 		"delivery_fee": 5.0,
-		"tags": "Video Games, Xbox One, Microsoft"
+		"tags": "Video Games Xbox One Microsoft"
 	}, 
 	{
 		"name": "PlayStation 4 Console",
 		"value": 350.0,
 		"delivery_fee": 5.0,
-		"tags": "Video Games, PlayStation 4 Console, Sony"
+		"tags": "Video Games PlayStation 4 Console Sony"
 	},
 	{
 		"name": "Nintendo Wii Console",
 		"value": 220.0,
 		"delivery_fee": 5.0,
-		"tags": "Video Games, Wii, Nintendo"
+		"tags": "Video Games Wii Nintendo"
 	}
 ]
