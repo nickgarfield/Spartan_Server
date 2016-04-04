@@ -73,7 +73,7 @@ curl -H "Content-Type: application/json" -X POST -d "{\"user_id\":\"575425813361
 curl http://molten-unison-112921.appspot.com/listing/suggested_rates/total_value=95.5
 
 ### Delete Listing
-curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id=5749563331706880
+curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id=5700239927279616
 
 ### Update Listing
 curl -H "Content-Type: application/json" -X POST -d "{\"category_id\":\"5713573250596864\", \"name\":\"Knockoff Headphones\", \"item_description\":\"I AM A LIAR\", \"total_value\":\"75\", \"hourly_rate\":\"7.5\", \"daily_rate\":\"15\", \"weekly_rate\":\"30\", \"status\":\"Unlisted\"}" http://molten-unison-112921.appspot.com/listing/update/listing_id=5749563331706880
