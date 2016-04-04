@@ -11,8 +11,9 @@ app = Flask(__name__)
 # Create a new order, put into Datastore, send requests to neighbors within 25 miles
 radius_miles = 25 # Miles
 METERS_PER_MILE = 1609.344 # Meters
+# curl -H "Content-Type: application/json" -X POST -d @test_jsons/order.json https://bygo-client-server.appspot.com/order/create
 @app.route('/order/create', methods=['POST'])
-def create_listing():
+def create_order():
 	json_data 	= request.get_json()
 	user_id 	= json_data.get('user_id','')
 	type_id 	= json_data.get('type_id', '')
@@ -39,15 +40,6 @@ def create_listing():
 	geo_point = ndb.GeoPt(float(geopt_array[0]), float(geopt_array[1]))
 
 	# Create Order object
-	# try:
-	# 	o = Order(renter=user_key, item_type=type_key, geo_point=geo_point, rental_duration=int(duration),
-	# 			rental_time_frame=int(time_frame), rental_fee=int(rental_fee), status='Requested')
-	# 	o_key = o.put()
-	# except ndb.Error:
-	# 	raise ServerError('Datastore put failed.', 500)
-	# except:
-		# abort(500)
-
 	o = Order(renter=user_key, item_type=type_key, geo_point=geo_point, rental_duration=int(duration),
 				rental_time_frame=time_frame, rental_fee=int(rental_fee), status='Requested')
 	o_key = o.put()
@@ -81,8 +73,47 @@ def create_listing():
 
 
 
+# Given a user, get his/her listings and check if there are any orders they can fulfill
+# curl https://bygo-client-server.com/order/get_possible/user_id=<int:user_id>
+@app.route('/order/get_possible/user_id=<int:user_id>', methods=['GET'])
+def get_possible_orders(user_id):
+	# Check to see if the user exists
+	u = User.get_by_id(int(user_id))
+	if u is None:
+		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+	user_key = ndb.Key('User', int(user_id))
+
+	user_item_type_ids = []
+	qry = Listing.query(Listing.owner==user_key)
+	# for listing in qry.fetch(projection=['item_type']):
+	for listing in qry.fetch():
+		item_type_id = listing.item_type.id()
+		if item_type_id not in user_item_type_ids:
+			user_item_type_ids.append(item_type_id)
+
+	logging.debug('user_item_type_ids: %s', user_item_type_ids)
+
+	radius_meters = radius_miles*METERS_PER_MILE
+	distance_query_string = 'distance(location, geopoint('+str(u.home_address.geo_point.lat)+','+str(u.home_address.geo_point.lat)+')) < '+str(radius_meters)
+	# not_self_query_string = 'NOT owner_id = '+str(user_id)
+	item_type_ids_query_string ='type_id = ('+' OR '.join(str(elem) for elem in user_item_type_ids) + ')'
+
+	# query_string = ' AND '.join([distance_query_string,not_self_query_string,item_type_ids_query_string])
+	query_string = ' AND '.join([distance_query_string,item_type_ids_query_string])
+
+	logging.debug('query_string: %s', query_string)
 
 
+	matched_orders, num_results = get_matched_orders(item_type_ids_query_string)
+
+	data = []
+	for order in matched_orders:
+		data += [{'order_id':order['order_id'], 'type_id':order['type_id']}]
+
+	resp = jsonify({'matched_orders':data})
+	resp.status_code = 200
+	logging.info('%d matched orders found: %s', num_results, data)
+	return resp
 
 
 
@@ -104,6 +135,27 @@ def get_matched_listings_ids(query_string):
 	num_results = results.number_found if results.number_found < MaxNumReturn else MaxNumReturn
 
 	return owners_listings_ids, num_results
+
+
+
+def get_matched_orders(query_string):
+	index = search.Index(name='Order')
+	try:
+		results = index.search(search.Query(query_string=query_string,
+						options=search.QueryOptions(limit=MaxNumReturn)))
+	except search.Error:
+		raise ServerError('Search failed', status_code=400)
+
+	matched_orders = []
+	for order in results:
+		matched_orders += [{'order_id':int(order.doc_id), 'type_id':int(order.field('type_id').value)}]
+
+	num_results = results.number_found if results.number_found < MaxNumReturn else MaxNumReturn
+
+	return matched_orders, num_results
+
+
+
 
 
 # Helper function to send a push notification to the owner

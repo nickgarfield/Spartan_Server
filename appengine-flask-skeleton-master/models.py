@@ -44,7 +44,7 @@ class Listing(ndb.Model):
 	owner 				= ndb.KeyProperty(required=True, kind=User)
 	renter 				= ndb.KeyProperty(kind=User)
 	status 				= ndb.StringProperty(required=True, default='Available', choices=['Available', 'Rented', 'Unavailable', 'Damaged', 'Deleted'])
-	item_type  			= ndb.KeyProperty(required=True, kind=Item_Type, indexed=False)
+	item_type  			= ndb.KeyProperty(required=True, kind=Item_Type)
 	item_description 	= ndb.StringProperty(indexed=False)
 	rating		 		= ndb.FloatProperty(default=-1.0, indexed=False)	# Value of -1 is used to signal no rating
 	listing_img_paths	= ndb.StringProperty(repeated=True, indexed=False)
