@@ -58,16 +58,16 @@ curl -X DELETE http://molten-unison-112921.appspot.com/delivery_address/delete/u
 curl http://molten-unison-112921.appspot.com/delivery_address/get/user_id=5634387206995968
 
 ### Generate Phone Number Verification Code
-curl http://molten-unison-112921.appspot.com/verification/phone_number/send_code/user_id=5722467590995968
+curl http://molten-unison-112921.appspot.com/verification/phone_number/send_code/user_id=5649521866440704
 
 ### Verify Phone Number
-curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"357325\", \"user_id\":\"5722467590995968\"}" http://molten-unison-112921.appspot.com/verification/phone_number/check_code
+curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"547517\", \"user_id\":\"5649521866440704\"}" http://molten-unison-112921.appspot.com/verification/phone_number/check_code
 
 
 
 ########### LISTING FUNCTIONS ##############
 ### Create Listing
-curl -H "Content-Type: application/json" -X POST -d "{\"user_id\":\"5634387206995968\", \"type_id\":\"5639574185312256\"}" http://molten-unison-112921.appspot.com/listing/create
+curl -H "Content-Type: application/json" -X POST -d "{\"user_id\":\"5754258133614592\", \"type_id\":\"5639574185312256\"}" http://molten-unison-112921.appspot.com/listing/create
 
 ### Get suggested rates for a listing given its total value
 curl http://molten-unison-112921.appspot.com/listing/suggested_rates/total_value=95.5
@@ -123,6 +123,12 @@ curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/listing
 ### Item Type Consistency Check
 curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/item_types
 
+
+
+
+########### ORDER FUNCTIONS #################
+### Create Order
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/order.json http://molten-unison-112921.appspot.com/order/create
 
 
 
