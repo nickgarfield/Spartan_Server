@@ -183,20 +183,27 @@ def get_possible_orders(user_id):
 	logging.debug('user_item_type_ids: %s', user_item_type_ids)
 
 	radius_meters = radius_miles*METERS_PER_MILE
-	distance_query_string = 'distance(location, geopoint('+str(u.home_address.geo_point.lat)+','+str(u.home_address.geo_point.lat)+')) < '+str(radius_meters)
-	# not_self_query_string = 'NOT renter_id = '+str(user_id)
-	item_type_ids_query_string ='type_id = ('+' OR '.join(str(elem) for elem in user_item_type_ids) + ')'
+	distance_query_string = 'distance(location, geopoint('+str(u.home_address.geo_point.lat)+','+str(u.home_address.geo_point.lon)+')) < '+str(radius_meters)
+	not_self_query_string = 'NOT renter_id = '+str(user_id)
+	item_type_ids_query_string ='type_id = (DUMMY OR '+' OR '.join(str(elem) for elem in user_item_type_ids) + ')'
 
-	# query_string = ' AND '.join([distance_query_string,not_self_query_string,item_type_ids_query_string])
-	query_string = ' AND '.join([distance_query_string,item_type_ids_query_string])
+	query_string = ' AND '.join([distance_query_string,not_self_query_string,item_type_ids_query_string])
 
 	logging.debug('query_string: %s', query_string)
 
-	matched_orders, num_results = get_matched_orders(item_type_ids_query_string)
+	matched_orders, num_results = get_matched_orders(query_string)
 
 	data = []
-	for order in matched_orders:
-		data += [{'order_id':order['order_id'], 'type_id':order['type_id']}]
+	for type_id in user_item_type_ids:
+		order_ids = []
+		for order in matched_orders:
+			if int(type_id) == int(order['type_id']):
+				order_ids.append(order['order_id'])
+
+		data += [{'type_id':type_id, 'order_ids':order_ids}]
+
+	# for order in matched_orders:
+	# 	data += [{'order_id':order['order_id'], 'type_id':order['type_id']}]
 
 	resp = jsonify({'matched_orders':data})
 	resp.status_code = 200
