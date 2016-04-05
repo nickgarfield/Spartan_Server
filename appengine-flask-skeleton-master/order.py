@@ -48,7 +48,7 @@ def create_order():
 			doc_id=str(o_key.id()),
 			fields=[search.TextField(name='type_id', value=str(type_id)),
 					search.TextField(name='renter_id', value=str(user_id)),
-					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat, u.home_address.geo_point.lon))])
+					search.GeoField(name='location', value=search.GeoPoint(geo_point.lat, geo_point.lon))])
 	index = search.Index(name='Order')
 	index.put(new_order)
 
@@ -57,7 +57,7 @@ def create_order():
 	radius_meters = radius_miles*METERS_PER_MILE
 
 	# Get all of the Listings local to the renter matching the item_type they want
-	query_string = 'distance(location, geopoint('+str(geo_point)+')) < '+str(radius_meters)+' AND type_id='+str(type_id)+' AND NOT renter_id='+str(user_id)
+	query_string = 'distance(location, geopoint('+str(geo_point)+')) < '+str(radius_meters)+' AND type_id='+str(type_id)+' AND NOT owner_id='+str(user_id)
 	owners_listings_ids, num_results = get_matched_listings_ids(query_string)
 
 	# Send notification to each owner that somebody in the area wants their item
@@ -156,6 +156,8 @@ def get_orders(user_id):
 	resp.status_code = 200
 	logging.info('User orders: %s', data)
 	return resp
+
+
 
 
 # Given a user, get his/her listings and check if there are any orders they can fulfill
