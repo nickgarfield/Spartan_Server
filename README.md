@@ -148,6 +148,8 @@ curl -H "Content-Type: application/json" -X POST -d @test_jsons/offer.json http:
 ### Renter accepts owner's offer
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/accepted_offer.json http://molten-unison-112921.appspot.com/order/accept_offer
 
+### Renter declines owner's offer
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/declined_offer.json http://molten-unison-112921.appspot.com/order/decline_offer
 
 
 

@@ -303,6 +303,50 @@ def accept_offer():
 
 
 
+# Renter declines an owner's listing offer
+# curl -H "Content-Type: application/json" -X POST -d @test_jsons/decline_offer.json https://bygo-client-server.com/order/accept_offer
+@app.route('/order/decline_offer', methods=['POST'])
+def decline_offer():
+	json_data 	= request.get_json()
+	order_id 	= json_data.get('order_id','')
+	listing_id 	= json_data.get('listing_id', '')
+
+	# Check to make sure the Order exists
+	o = Order.get_by_id(int(order_id))
+	if o is None:
+		raise InvalidUsage('Order does not exist!', status_code=400)
+
+	# Check to make sure the Listing exists
+	l = Listing.get_by_id(int(listing_id))
+	if l is None:
+		raise InvalidUsage('Listing does not exist!', status_code=400)
+	listing_key = ndb.Key('Listing', int(listing_id))
+
+
+	# Delete listing from the list of offers
+	if listing_key not in o.offered_listings:
+		raise InvalidUsage('Listing does not exist in offers.', status_code=400)
+	else:
+		o.offered_listings.remove(listing_key)
+
+	# Set listing status back to 'Requested' if no offers left,
+	# Otherwise, if there are offers left, keep status as 'Offered'
+	# if not o.offered_listings:
+	if len(o.offered_listings) == 0:
+		o.status = 'Requested'
+
+	# Add the updated listing status to the Datastore
+	try:
+		o.put()
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
+
+	# Return response
+	logging.info('Listing %d successfully declined for order %d', int(listing_id), int(order_id))
+	return 'Offer successfully declined.', 200
+
+
+
 MaxNumReturn = 200
 # Helper function that returns a list of listings and their respective owners' info given a query_string
 def get_matched_listings_ids(query_string):
