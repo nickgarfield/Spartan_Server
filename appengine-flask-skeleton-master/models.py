@@ -53,13 +53,14 @@ class Listing(ndb.Model):
 
 
 class Order(ndb.Model):
-	renter 					= ndb.KeyProperty(required=True, kind=User)
-	item_type  				= ndb.KeyProperty(required=True, kind=Item_Type, indexed=False)
+	renter 					= ndb.KeyProperty(required=True, kind=User, indexed=True)
+	item_type  				= ndb.KeyProperty(required=True, kind=Item_Type, indexed=True)
 	geo_point 				= ndb.GeoPtProperty(indexed=False)
 	rental_duration			= ndb.IntegerProperty(indexed=True)
-	rental_time_frame 		= ndb.StringProperty(choices=['Hourly' ,'Daily', 'Weekly', 'Semesterly'], default='Daily', indexed=False)
+	rental_time_frame 		= ndb.StringProperty(choices=['Hourly' ,'Daily', 'Weekly', 'Semesterly'], default='Daily', indexed=True)
 	rental_fee				= ndb.FloatProperty(indexed=True)
-	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Filled', 'Accepted', 'Rejected'])
+	offered_listings		= ndb.KeyProperty(required=True, kind=Listing, repeated=True, indexed=False)
+	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Filled', 'Accepted', 'Rejected'], indexed=True)
 	date_created			= ndb.DateTimeProperty(auto_now_add=True, indexed=True)
 	owner_response_time 	= ndb.DateTimeProperty(indexed=False)
 	renter_response_time 	= ndb.DateTimeProperty(indexed=False)
