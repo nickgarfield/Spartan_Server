@@ -47,7 +47,7 @@ def create_order():
 	new_order = search.Document(
 			doc_id=str(o_key.id()),
 			fields=[search.TextField(name='type_id', value=str(type_id)),
-					search.TextField(name='owner_id', value=str(user_id)),
+					search.TextField(name='renter_id', value=str(user_id)),
 					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat, u.home_address.geo_point.lon))])
 	index = search.Index(name='Order')
 	index.put(new_order)
@@ -116,7 +116,7 @@ def get_order(order_id):
 	if o is None:
 		raise InvalidUsage('Order ID does not match any existing Order.', 400)
 
-	data = {'order_id':str(o.key.id()), 'owner_id':str(o.renter.id()),
+	data = {'order_id':str(o.key.id()), 'renter_id':str(o.renter.id()),
 			'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
 			'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
 			'status':o.status, 'date_created':o.date_created}
@@ -145,7 +145,7 @@ def get_orders(user_id):
 
 	data = []
 	for o in qry.fetch():
-		order_data = {'order_id':str(o.key.id()), 'owner_id':str(o.renter.id()),
+		order_data = {'order_id':str(o.key.id()), 'renter_id':str(o.renter.id()),
 					  'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
 					  'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
 					  'status':o.status, 'date_created':o.date_created}
@@ -188,7 +188,6 @@ def get_possible_orders(user_id):
 
 	logging.debug('query_string: %s', query_string)
 
-
 	matched_orders, num_results = get_matched_orders(item_type_ids_query_string)
 
 	data = []
@@ -208,7 +207,7 @@ def get_possible_orders(user_id):
 
 
 MaxNumReturn = 200
-# Helper function that returns a list of listings and their respective owners' info given a a query_string
+# Helper function that returns a list of listings and their respective owners' info given a query_string
 def get_matched_listings_ids(query_string):
 	index = search.Index(name='Listing')
 	try:
