@@ -49,6 +49,7 @@ def create_order():
 			fields=[search.TextField(name='type_id', value=str(type_id)),
 					search.TextField(name='renter_id', value=str(user_id)),
 					search.GeoField(name='location', value=search.GeoPoint(geo_point.lat, geo_point.lon))])
+
 	index = search.Index(name='Order')
 	index.put(new_order)
 
@@ -64,7 +65,6 @@ def create_order():
 	for matched_listing in owners_listings_ids:
 		send_notification(matched_listing['listing_id'], matched_listing['owner_id'])
 
-	# FIXME: What to send back?
 	data = {'order_id':str(o_key.id()), 'user_id':str(user_id),	'type_id':str(type_id), 'duration':duration, 'time_frame':time_frame, 'rental_fee':rental_fee, 'status':o.status, 'offered_listings':[]}
 
 	resp = jsonify(data)
