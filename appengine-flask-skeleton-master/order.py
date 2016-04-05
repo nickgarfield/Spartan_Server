@@ -57,10 +57,10 @@ def create_order():
 	radius_meters = radius_miles*METERS_PER_MILE
 
 	# Get all of the Listings local to the renter matching the item_type they want
-	query_string = 'distance(location, geopoint('+str(geo_point)+')) < '+str(radius_meters)+' AND type_id='+str(type_id)+' AND NOT owner_id='+str(user_id)
+	query_string = 'distance(location, geopoint('+str(geo_point)+')) < '+str(radius_meters)+' AND type_id='+str(type_id)+' AND NOT renter_id='+str(user_id)
 	owners_listings_ids, num_results = get_matched_listings_ids(query_string)
 
-	# Send notification to each owner that somebody in the are wants their item
+	# Send notification to each owner that somebody in the area wants their item
 	for matched_listing in owners_listings_ids:
 		send_notification(matched_listing['listing_id'], matched_listing['owner_id'])
 
@@ -180,7 +180,7 @@ def get_possible_orders(user_id):
 
 	radius_meters = radius_miles*METERS_PER_MILE
 	distance_query_string = 'distance(location, geopoint('+str(u.home_address.geo_point.lat)+','+str(u.home_address.geo_point.lat)+')) < '+str(radius_meters)
-	# not_self_query_string = 'NOT owner_id = '+str(user_id)
+	# not_self_query_string = 'NOT renter_id = '+str(user_id)
 	item_type_ids_query_string ='type_id = ('+' OR '.join(str(elem) for elem in user_item_type_ids) + ')'
 
 	# query_string = ' AND '.join([distance_query_string,not_self_query_string,item_type_ids_query_string])
