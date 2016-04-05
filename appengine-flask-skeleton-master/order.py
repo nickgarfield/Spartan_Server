@@ -106,6 +106,30 @@ def cancel_order(order_id):
 
 
 
+
+# Function to get an order
+# curl https://bygo-client-server.appspot.com/order/order_id=<int:order_id>
+@app.route('/order/order_id=<int:order_id>')
+def get_order(order_id):
+	# Get the order
+	o = Order.get_by_id(order_id)
+	if o is None:
+		raise InvalidUsage('Order ID does not match any existing Order.', 400)
+
+	data = {'order_id':str(o.key.id()), 'owner_id':str(o.renter.id()),
+			'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
+			'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
+			'status':o.status, 'date_created':o.date_created}
+
+	# Return response
+	resp = jsonify(data)
+	resp.status_code = 200
+	logging.info('Order successfully retrieved: %s', data)
+	return resp
+
+
+
+
 # Function to get a user's orders
 # curl https://bygo-client-server.appspot.com/order/user_id=<int:user_id>
 @app.route('/order/user_id=<int:user_id>', methods=['GET'])
@@ -118,7 +142,7 @@ def get_orders(user_id):
 
 	# qry = Order.query(Order.renter == user_key).order(-Order.date_created)
 	qry = Order.query(Order.renter == user_key)
-	
+
 	data = []
 	for o in qry.fetch():
 		order_data = {'order_id':str(o.key.id()), 'owner_id':str(o.renter.id()),
@@ -175,6 +199,11 @@ def get_possible_orders(user_id):
 	resp.status_code = 200
 	logging.info('%d matched orders found: %s', num_results, data)
 	return resp
+
+
+
+
+
 
 
 

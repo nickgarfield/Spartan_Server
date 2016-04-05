@@ -133,11 +133,17 @@ curl -H "Content-Type: application/json" -X POST -d @test_jsons/order.json http:
 ### Cancel Order
 curl -X DELETE http://molten-unison-112921.appspot.com/order/cancel/order_id=5672889575538688
 
-### Get Possible Orders
-curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
+### Get Order
+curl http://molten-unison-112921.appspot.com/order/order_id=5672889575538688
 
 ### Get a User's Orders
 curl http://molten-unison-112921.appspot.com/order/user_id=5634387206995968
+
+### Get Possible Orders
+curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
+
+### Owner Offers their Listing
+
 
 
 
