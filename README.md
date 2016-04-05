@@ -34,7 +34,7 @@ curl -X DELETE http://molten-unison-112921.appspot.com/user/deactivate/user_id=5
 curl -X DELETE http://molten-unison-112921.appspot.com/user/delete_from_search/user_id=5706163895140352
 
 ### Reactivate User
-curl -H "Content-Type: application/json" -X POST -d {} http://molten-unison-112921.appspot.com/user/reactivate/user_id=5717495361044480
+curl -X POST -d {} http://molten-unison-112921.appspot.com/user/reactivate/user_id=5717495361044480
 
 ### Update User
 curl -H "Content-Type: application/json" -X POST -d "{\"first_name\":\"Sayan\", \"last_name\":\"Roychowdhury\", \"email\":\"sayan@bygo.io\", \"phone_number\":\"0123456789\"}" http://molten-unison-112921.appspot.com/user/update/user_id=5634387206995968

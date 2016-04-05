@@ -213,16 +213,20 @@ def get_possible_orders(user_id):
 
 
 # Owner offers their listing to fulfill a requested order
-# curl -H "Content-Type: application/json" -X POST -d {} https://bygo-client-server.com/order/offer_listing/order_id=<int:order_id>/listing_id=<int:listing_id>
-@app.route('/order/offer_listing/order_id=<int:order_id>/listing_id=<int:listing_id>', methods=['POST'])
-def offer_listing(order_id, listing_id):
+# curl -H "Content-Type: application/json" -X POST -d @test_jsons/offer.json https://bygo-client-server.com/order/offer_listing
+@app.route('/order/offer_listing', methods=['POST'])
+def offer_listing():
+	json_data 	= request.get_json()
+	order_id 	= json_data.get('order_id','')
+	listing_id 	= json_data.get('listing_id', '')
+
 	# Check to make sure the Order exists
-	o = Order.get_by_id(order_id)
+	o = Order.get_by_id(int(order_id))
 	if o is None:
 		raise InvalidUsage('Order does not exist!', status_code=400)
 
 	# Check to make sure the Listing exists
-	l = Listing.get_by_id(listing_id)
+	l = Listing.get_by_id(int(listing_id))
 	if l is None:
 		raise InvalidUsage('Listing does not exist!', status_code=400)
 	listing_key = ndb.Key('Listing', int(listing_id))
@@ -241,7 +245,7 @@ def offer_listing(order_id, listing_id):
 		raise ServerError('Datastore put failed.', 500)
 
 	# Return response
-	logging.info('Listing %d successfully offered for order %d', listing_id, order_id)
+	logging.info('Listing %d successfully offered for order %d', int(listing_id), int(order_id))
 	return 'Offer successfully sent.', 200
 
 
