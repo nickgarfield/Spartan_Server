@@ -91,7 +91,7 @@ def deactivate_user(user_id):# Edit Datastore entity
 	# Get the user
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('User ID does not match any existing user', 400)
+		raise InvalidUsage('User not found', 400)
 
 	if u.status == 'Deactivated':
 		raise InvalidUsage('User is already deactivated!', 400)
@@ -219,7 +219,7 @@ def update_user(user_id):
 	# Get the user
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('User ID does not match any existing user', 400)
+		raise InvalidUsage('User not found', 400)
 
 	# Validate email and phone number before updating anything
 	if u.email != email:
@@ -285,7 +285,7 @@ def update_home_address(user_id):
 	# Get the user
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('User ID does not match any existing user', 400)
+		raise InvalidUsage('User not found', 400)
 
 	u.home_address = Delivery_Address(address=address, name=name, google_places_id=google_places_id, geo_point=ndb.GeoPt(geo_point))
 
@@ -311,7 +311,7 @@ def create_user_image(user_id):
 	# Check to see if the user exists
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 
 	# Create client for interfacing with Cloud Storage API
 	client = storage.Client()
@@ -349,7 +349,7 @@ def delete_user_image(user_id):
 	# Check to see if the user exists
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 
 	path = u.profile_picture_path
 	if path is None:
@@ -373,7 +373,7 @@ def delete_user_image(user_id):
 def get_user(user_id):
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('User ID does not match any existing user', 400)
+		raise InvalidUsage('User not found', 400)
 
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
 
@@ -433,7 +433,7 @@ def login_facebook_user():
 
 	# Raise an error if no user is found with this particular Facebook ID
 	if u is None:
-		raise InvalidUsage('User with facebookID not found', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 
 	# Get user's profile picture
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
@@ -464,7 +464,7 @@ def validate_email(email):
 		q = User.query(ndb.AND(User.email == email, User.status == 'Active'))
 		u = q.get()
 		if u is not None:
-			raise InvalidUsage('Email address already registered.', status_code=400)
+			raise InvalidUsage('Email address already registered', status_code=400)
 
 # Check if a user is already registered with the given phone number
 def validate_phone(phone_number):
@@ -472,7 +472,7 @@ def validate_phone(phone_number):
 		q = User.query(ndb.AND(User.phone_number == phone_number, User.status == 'Active'))
 		u = q.get()
 		if u is not None:
-			raise InvalidUsage('Phone number already registered.', status_code=400)
+			raise InvalidUsage('Phone number already registered', status_code=400)
 
 
 # Helper function that returns an image media link from cloudstorage given the path
