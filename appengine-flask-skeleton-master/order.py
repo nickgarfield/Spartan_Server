@@ -28,6 +28,13 @@ def create_order():
 		raise InvalidUsage('User not found', status_code=400)
 	user_key = ndb.Key('User', int(user_id))
 
+	# Check to see if the phone number is verified
+	if u.phone_number is None:
+		raise InvalidUsage('Phone number not found', status_code=400)
+
+	if u.phone_number_verification is None or not u.phone_number_verification.is_verified:
+		raise InvalidUsage('Phone number not verified', status_code=400)
+
 	# Check to see if the type_id exists
 	item_type = Item_Type.get_by_id(int(type_id))
 	if item_type is None:
