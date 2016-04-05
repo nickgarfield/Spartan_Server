@@ -236,7 +236,10 @@ def offer_listing():
 	o.status = 'Offered'
 
 	# Append listing to the list of offers
-	o.offered_listings.append(listing_key)
+	if listing_key in o.offered_listings:
+		raise InvalidUsage('Offer already pending.', status_code=400)
+	else:
+		o.offered_listings.append(listing_key)
 
 	# Add the updated listing status to the Datastore
 	try:

@@ -143,7 +143,7 @@ curl http://molten-unison-112921.appspot.com/order/user_id=5634387206995968
 curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
 
 ### Owner Offers their Listing
-curl -X POST -d {} http://molten-unison-112921.appspot.com/order/offer_listing/order_id=5197794386116608/listing_id=5152971570544640
+curl -X POST -d @test_jsons/offer.json http://molten-unison-112921.appspot.com/order/offer_listing
 
 
 
