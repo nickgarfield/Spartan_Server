@@ -24,12 +24,12 @@ class User(ndb.Model):
 	email_verification 			= ndb.StructuredProperty(Verification, indexed=False, required=False)
 	password 					= ndb.StringProperty()
 	facebook_id					= ndb.StringProperty()
-	signup_method 				= ndb.StringProperty(required=True, choices=['Facebook', 'Email', 'Phone Number'], indexed=False)
+	signup_method 				= ndb.StringProperty(required=True, choices=['Facebook', 'Email', 'Phone Number'])
 	home_address				= ndb.StructuredProperty(Delivery_Address, indexed=False)
 	credit 						= ndb.FloatProperty(default=0.0, indexed=False) # How much money the user owes at the end of the week
 	debit 						= ndb.FloatProperty(default=0.0, indexed=False) # How much money the user has credited to their account (i.e. $15 from signing up or promotions)
-	date_created 				= ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-	date_last_modified 			= ndb.DateTimeProperty(auto_now=True, indexed=False)
+	date_created 				= ndb.DateTimeProperty(auto_now_add=True)
+	date_last_modified 			= ndb.DateTimeProperty(auto_now=True)
 	status						= ndb.StringProperty(default='Active', choices=['Active', 'Inactive', 'Deactivated'])
 	profile_picture_path		= ndb.StringProperty(indexed=False)
 
@@ -37,7 +37,7 @@ class User(ndb.Model):
 class Item_Type(ndb.Model):
 	name 				= ndb.StringProperty(required=True, indexed=True)
 	value 				= ndb.FloatProperty(indexed=True)
-	delivery_fee	 	= ndb.FloatProperty(required=True, indexed=False)
+	delivery_fee	 	= ndb.FloatProperty(required=True)
 	
 
 class Listing(ndb.Model):
@@ -46,22 +46,22 @@ class Listing(ndb.Model):
 	status 				= ndb.StringProperty(required=True, default='Available', choices=['Available', 'Rented', 'Unavailable', 'Damaged', 'Deleted'])
 	item_type  			= ndb.KeyProperty(required=True, kind=Item_Type)
 	item_description 	= ndb.StringProperty(indexed=False)
-	rating		 		= ndb.FloatProperty(default=-1.0, indexed=False)	# Value of -1 is used to signal no rating
+	rating		 		= ndb.FloatProperty(default=-1.0)	# Value of -1 is used to signal no rating
 	listing_img_paths	= ndb.StringProperty(repeated=True, indexed=False)
-	date_created		= ndb.DateTimeProperty(auto_now_add=True, indexed=False)
-	date_last_modified 	= ndb.DateTimeProperty(auto_now=True, indexed=False)
+	date_created		= ndb.DateTimeProperty(auto_now_add=True)
+	date_last_modified 	= ndb.DateTimeProperty(auto_now=True)
 
 
 class Order(ndb.Model):
-	renter 					= ndb.KeyProperty(required=True, kind=User, indexed=True)
-	item_type  				= ndb.KeyProperty(required=True, kind=Item_Type, indexed=True)
+	renter 					= ndb.KeyProperty(required=True, kind=User)
+	item_type  				= ndb.KeyProperty(required=True, kind=Item_Type)
 	geo_point 				= ndb.GeoPtProperty(indexed=False)
-	rental_duration			= ndb.IntegerProperty(indexed=True)
-	rental_time_frame 		= ndb.StringProperty(choices=['Hourly' ,'Daily', 'Weekly', 'Semesterly'], default='Daily', indexed=True)
-	rental_fee				= ndb.FloatProperty(indexed=True)
-	offered_listings		= ndb.KeyProperty(kind=Listing, repeated=True, indexed=False)
-	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Filled', 'Accepted', 'Canceled'], indexed=True)
-	date_created			= ndb.DateTimeProperty(auto_now_add=True, indexed=True)
+	rental_duration			= ndb.IntegerProperty()
+	rental_time_frame 		= ndb.StringProperty(choices=['Hourly' ,'Daily', 'Weekly', 'Semesterly'], default='Daily')
+	rental_fee				= ndb.FloatProperty()
+	offered_listings		= ndb.KeyProperty(kind=Listing, repeated=True)
+	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Offered', 'Accepted', 'Canceled'])
+	date_created			= ndb.DateTimeProperty(auto_now_add=True)
 
 
 class Delivery_Event(ndb.Model):
@@ -74,10 +74,10 @@ class Delivery_Event(ndb.Model):
 
 
 class Rent_Event(ndb.Model):
-	order 				= ndb.KeyProperty(required=True, kind=Order, indexed=False)
-	owner 				= ndb.KeyProperty(required=True, kind=User, indexed=False)
-	renter 				= ndb.KeyProperty(required=True, kind=User, indexed=False)
-	listing 			= ndb.KeyProperty(required=True, kind=Listing, indexed=False)
+	order 				= ndb.KeyProperty(required=True, kind=Order)
+	owner 				= ndb.KeyProperty(required=True, kind=User)
+	renter 				= ndb.KeyProperty(required=True, kind=User)
+	listing 			= ndb.KeyProperty(required=True, kind=Listing)
 	delivery_fee		= ndb.FloatProperty(indexed=False)
 	total_rental_cost	= ndb.FloatProperty(indexed=False)
 	status 				= ndb.StringProperty(required=True, choices=['Scheduled', 'In Transit', 'Ongoing', 'Concluded', 'Canceled'])
@@ -85,4 +85,4 @@ class Rent_Event(ndb.Model):
 	delivery_dropoff 	= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
 	return_pickup 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
 	return_dropoff 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
-	date_created		= ndb.DateTimeProperty(auto_now_add=True, indexed=True)
+	date_created		= ndb.DateTimeProperty(auto_now_add=True)

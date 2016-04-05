@@ -1,8 +1,8 @@
 {
 	"user_id": 5754258133614592,
 	"type_id": 5639574185312256,
-	"geo_point": "40.1128715, -88.231854",
-	"duration": 2,
+	"geo_point": "40.0500, -88.1000",
+	"duration": 5,
 	"time_frame":"Daily",
-	"rental_fee": 25
+	"rental_fee": 60.0
 }
