@@ -47,6 +47,7 @@ def create_order():
 	new_order = search.Document(
 			doc_id=str(o_key.id()),
 			fields=[search.TextField(name='type_id', value=str(type_id)),
+					search.TextField(name='owner_id', value=str(ouser_id)),
 					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat, u.home_address.geo_point.lon))])
 	index = search.Index(name='Order')
 	index.put(new_order)
