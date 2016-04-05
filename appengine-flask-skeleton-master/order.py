@@ -25,13 +25,13 @@ def create_order():
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 	user_key = ndb.Key('User', int(user_id))
 
 	# Check to see if the type_id exists
 	item_type = Item_Type.get_by_id(int(type_id))
 	if item_type is None:
-		raise InvalidUsage('TagID does not match any existing tag', status_code=400)
+		raise InvalidUsage('Item type not found', status_code=400)
 	type_key = ndb.Key('Item_Type', int(type_id))
 
 	# given geo_point format: 'lat, lon' (sent as a string)
@@ -65,7 +65,7 @@ def create_order():
 		send_notification(matched_listing['listing_id'], matched_listing['owner_id'])
 
 	# FIXME: What to send back?
-	data = {'order_id':str(o_key.id()),	'matching listings found':num_results}
+	data = {'order_id':str(o_key.id()), 'user_id':str(user_id),	'type_id':str(type_id), 'duration':duration, 'time_frame':time_frame, 'rental_fee':rental_fee, 'status':o.status, 'offered_listings':[]}
 
 	resp = jsonify(data)
 	resp.status_code = 201
