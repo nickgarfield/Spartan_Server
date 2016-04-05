@@ -62,8 +62,6 @@ class Order(ndb.Model):
 	offered_listings		= ndb.KeyProperty(kind=Listing, repeated=True, indexed=False)
 	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Filled', 'Accepted', 'Canceled'], indexed=True)
 	date_created			= ndb.DateTimeProperty(auto_now_add=True, indexed=True)
-	owner_response_time 	= ndb.DateTimeProperty(indexed=False)
-	renter_response_time 	= ndb.DateTimeProperty(indexed=False)
 
 
 class Delivery_Event(ndb.Model):
@@ -87,4 +85,4 @@ class Rent_Event(ndb.Model):
 	delivery_dropoff 	= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
 	return_pickup 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
 	return_dropoff 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
-
+	date_created		= ndb.DateTimeProperty(auto_now_add=True, indexed=True)
