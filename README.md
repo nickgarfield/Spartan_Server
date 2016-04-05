@@ -67,13 +67,13 @@ curl -H "Content-Type: application/json" -X POST -d "{\"verification_code\":\"54
 
 ########### LISTING FUNCTIONS ##############
 ### Create Listing
-curl -H "Content-Type: application/json" -X POST -d "{\"user_id\":\"5754258133614592\", \"type_id\":\"5639574185312256\"}" http://molten-unison-112921.appspot.com/listing/create
+curl -H "Content-Type: application/json" -X POST -d "{\"user_id\":\"5649521866440704\", \"type_id\":\"5639574185312256\"}" http://molten-unison-112921.appspot.com/listing/create
 
 ### Get suggested rates for a listing given its total value
 curl http://molten-unison-112921.appspot.com/listing/suggested_rates/total_value=95.5
 
 ### Delete Listing
-curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id=5700239927279616
+curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete/listing_id=5727389891952640
 
 ### Update Listing
 curl -H "Content-Type: application/json" -X POST -d "{\"category_id\":\"5713573250596864\", \"name\":\"Knockoff Headphones\", \"item_description\":\"I AM A LIAR\", \"total_value\":\"75\", \"hourly_rate\":\"7.5\", \"daily_rate\":\"15\", \"weekly_rate\":\"30\", \"status\":\"Unlisted\"}" http://molten-unison-112921.appspot.com/listing/update/listing_id=5749563331706880
@@ -85,7 +85,7 @@ curl -X POST -F "filename=ps4.jpg" -F "userfile=@C:/Users/Sayan/Desktop/ps4-6343
 curl -X DELETE http://molten-unison-112921.appspot.com/listing/delete_listing_image/path=5682617542246400/40mmOLChntSglLp2686GovBlkSnp-2.jpg
 
 ### Get a listing's data
-curl http://molten-unison-112921.appspot.com/listing/listing_id=5747610597982208
+curl http://molten-unison-112921.appspot.com/listing/listing_id=5659118702428160
 
 ### Get User's Listings (user == owner)
 curl http://molten-unison-112921.appspot.com/listing/get_users_listings/user_id=5634387206995968
@@ -131,10 +131,10 @@ curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/item_ty
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/order.json http://molten-unison-112921.appspot.com/order/create
 
 ### Cancel Order
-curl -X DELETE http://molten-unison-112921.appspot.com/order/cancel/order_id=5672889575538688
+curl -X DELETE http://molten-unison-112921.appspot.com/order/cancel/order_id=5739238230327296
 
 ### Get Order
-curl http://molten-unison-112921.appspot.com/order/order_id=5672889575538688
+curl http://molten-unison-112921.appspot.com/order/order_id=5197794386116608
 
 ### Get a User's Orders
 curl http://molten-unison-112921.appspot.com/order/user_id=5634387206995968
@@ -143,6 +143,7 @@ curl http://molten-unison-112921.appspot.com/order/user_id=5634387206995968
 curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
 
 ### Owner Offers their Listing
+curl -X POST -d {} http://molten-unison-112921.appspot.com/order/offer_listing/order_id=5197794386116608/listing_id=5152971570544640
 
 
 

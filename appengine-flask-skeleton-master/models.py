@@ -59,8 +59,8 @@ class Order(ndb.Model):
 	rental_duration			= ndb.IntegerProperty()
 	rental_time_frame 		= ndb.StringProperty(choices=['Hourly' ,'Daily', 'Weekly', 'Semesterly'], default='Daily')
 	rental_fee				= ndb.FloatProperty()
-	offered_listings		= ndb.KeyProperty(kind=Listing, repeated=True, indexed=False)
-	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Filled', 'Accepted', 'Canceled'])
+	offered_listings		= ndb.KeyProperty(kind=Listing, repeated=True)
+	status 					= ndb.StringProperty(required=True, choices=['Requested', 'Offered', 'Accepted', 'Canceled'])
 	date_created			= ndb.DateTimeProperty(auto_now_add=True)
 
 

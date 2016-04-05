@@ -212,6 +212,37 @@ def get_possible_orders(user_id):
 
 
 
+# Owner offers their listing to fulfill a requested order
+# curl -H "Content-Type: application/json" -X POST -d {} https://bygo-client-server.com/order/offer_listing/order_id=<int:order_id>/listing_id=<int:listing_id>
+@app.route('/order/offer_listing/order_id=<int:order_id>/listing_id=<int:listing_id>', methods=['POST'])
+def offer_listing(order_id, listing_id):
+	# Check to make sure the Order exists
+	o = Order.get_by_id(order_id)
+	if o is None:
+		raise InvalidUsage('Order does not exist!', status_code=400)
+
+	# Check to make sure the Listing exists
+	l = Listing.get_by_id(listing_id)
+	if l is None:
+		raise InvalidUsage('Listing does not exist!', status_code=400)
+	listing_key = ndb.Key('Listing', int(listing_id))
+
+
+	# Set listing status to 'Offered'
+	o.status = 'Offered'
+
+	# Append listing to the list of offers
+	o.offered_listings.append(listing_key)
+
+	# Add the updated listing status to the Datastore
+	try:
+		o.put()
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
+
+	# Return response
+	logging.info('Listing %d successfully offered for order %d', listing_id, order_id)
+	return 'Offer successfully sent.', 200
 
 
 
@@ -251,7 +282,6 @@ def get_matched_orders(query_string):
 		matched_orders += [{'order_id':int(order.doc_id), 'type_id':int(order.field('type_id').value)}]
 
 	num_results = results.number_found if results.number_found < MaxNumReturn else MaxNumReturn
-
 	return matched_orders, num_results
 
 
