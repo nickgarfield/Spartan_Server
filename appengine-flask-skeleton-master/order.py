@@ -106,6 +106,33 @@ def cancel_order(order_id):
 
 
 
+# Function to get a user's orders
+# curl https://bygo-client-server.appspot.com/order/user_id=<int:user_id>
+@app.route('/order/user_id=<int:user_id>', methods=['GET'])
+def get_orders(user_id):
+	# Check to see if the user exists
+	u = User.get_by_id(int(user_id))
+	if u is None:
+		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+	user_key = ndb.Key('User', int(user_id))
+
+	# qry = Order.query(Order.renter == user_key).order(-Order.date_created)
+	qry = Order.query(Order.renter == user_key)
+	
+	data = []
+	for o in qry.fetch():
+		order_data = {'order_id':str(o.key.id()), 'owner_id':str(o.renter.id()),
+					  'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
+					  'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
+					  'status':o.status, 'date_created':o.date_created}
+		data += [order_data]
+
+	# Return response
+	resp = jsonify({'order_data':data})
+	resp.status_code = 200
+	logging.info('User orders: %s', data)
+	return resp
+
 
 # Given a user, get his/her listings and check if there are any orders they can fulfill
 # curl https://bygo-client-server.com/order/get_possible/user_id=<int:user_id>

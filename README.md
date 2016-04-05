@@ -136,7 +136,8 @@ curl -X DELETE http://molten-unison-112921.appspot.com/order/cancel/order_id=567
 ### Get Possible Orders
 curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
 
-
+### Get a User's Orders
+curl http://molten-unison-112921.appspot.com/order/user_id=5634387206995968
 
 
 
