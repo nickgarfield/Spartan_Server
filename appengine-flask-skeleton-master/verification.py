@@ -45,12 +45,12 @@ def send_code(user_id):
 	if u.phone_number is None:
 		u.phone_number_verification = None
 		u.put()
-		raise InvalidUsage('Phone number is missing', status_code=412)
+		raise InvalidUsage('Phone number not found', status_code=412)
 
 	# Check if the user's phone number is already verified
 	if u.phone_number_verification is not None:
 		if u.phone_number_verification.is_verified:
-			raise InvalidUsage('Phone number is already verified', status_code=400)
+			raise InvalidUsage('Phone number already verified', status_code=400)
 
 	# Generate the verification code
 	verification_code = generate_verification_code(VERIFICATION_CODE_SIZE)
@@ -80,26 +80,26 @@ def check_code():
 	# Check if the user_id is valid
 	u = User.get_by_id(user_id)
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 
 	# Check if there is a valid distribution time
 	if u.phone_number_verification is None:
-		raise InvalidUsage('No verification code has been sent', status_code=400)
+		raise InvalidUsage('Verification code not found', status_code=400)
 
 	# Check to make sure the user has not removed their phone number
 	if u.phone_number is None:
 		u.phone_number_verification = None
 		u.put()
-		raise InvalidUsage('Phone number is missing', status_code=412)
+		raise InvalidUsage('Phone number not found', status_code=412)
 
 	# Check if the user's phone number is already verified
 	if u.phone_number_verification.is_verified:
-		raise InvalidUsage('Phone number is already verified', status_code=400)
+		raise InvalidUsage('Phone number already verified', status_code=400)
 
 	# Check if the verification code has timed out
 	elapsed_time = datetime.datetime.now() - u.phone_number_verification.distribution_datetime
 	if elapsed_time.total_seconds() > VERIFICATION_TIMEOUT_LIMIT:
-		raise InvalidUsage('Verification code is no longer valid', status_code=419)
+		raise InvalidUsage('Verification code expired', status_code=419)
 
 	# Check if the verification code matches the expected code
 	if u.phone_number_verification.code != verification_code:
@@ -107,7 +107,7 @@ def check_code():
 		# entered it wrong the first time?
 		# u.phone_number_verification = None
 		# u.put()
-		raise InvalidUsage('Verification code did not match', status_code=400)
+		raise InvalidUsage('Verification code invalid', status_code=400)
 
 	# Mark the user's phone number as verified
 	try:

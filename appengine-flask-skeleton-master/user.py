@@ -404,7 +404,7 @@ def login_user():
 
 	# Raise an error if the user's phone number and password do not match
 	if u is None:
-		raise InvalidUsage('Phone number and password do not match', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 
 	# Get user's profile picture
 	user_img_media_link = get_img_medialink(u.profile_picture_path)
@@ -414,7 +414,7 @@ def login_user():
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link,
-			'home_address_name':u.home_address.name, 'home_address_address':u.home_address.address, 'home_address_google_places_id':u.home_address.google_places_id}
+			'home_address_name':u.home_address.name if u.home_address else None, 'home_address_address':u.home_address.address if u.home_address else None, 'home_address_google_places_id':u.home_address.google_places_id if u.home_address else None }
 
 	resp = jsonify(data)
 	resp.status_code = 200
@@ -443,7 +443,7 @@ def login_facebook_user():
 			'phone_number':u.phone_number, 'email':u.email, 'password':u.password, 
 			'facebook_id':u.facebook_id, 'credit':u.credit, 'debit':u.debit, 'status':u.status,
 			'image_path':u.profile_picture_path, 'image_media_link':user_img_media_link,
-			'home_address_name':u.home_address.name, 'home_address_address':u.home_address.address, 'home_address_google_places_id':u.home_address.google_places_id}
+			'home_address_name':u.home_address.name if u.home_address else None, 'home_address_address':u.home_address.address if u.home_address else None, 'home_address_google_places_id':u.home_address.google_places_id if u.home_address else None }
 
 	resp = jsonify(data)
 	resp.status_code = 200
@@ -464,7 +464,7 @@ def validate_email(email):
 		q = User.query(ndb.AND(User.email == email, User.status == 'Active'))
 		u = q.get()
 		if u is not None:
-			raise InvalidUsage('Email address is already registered.', status_code=400)
+			raise InvalidUsage('Email address already registered.', status_code=400)
 
 # Check if a user is already registered with the given phone number
 def validate_phone(phone_number):
@@ -472,7 +472,7 @@ def validate_phone(phone_number):
 		q = User.query(ndb.AND(User.phone_number == phone_number, User.status == 'Active'))
 		u = q.get()
 		if u is not None:
-			raise InvalidUsage('Phone number is already registered.', status_code=400)
+			raise InvalidUsage('Phone number already registered.', status_code=400)
 
 
 # Helper function that returns an image media link from cloudstorage given the path

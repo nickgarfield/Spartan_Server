@@ -11,6 +11,7 @@ app = Flask(__name__)
 kGALLERY_WITH_TITLE_CELL = 0
 kITEM_TYPE_CELL = 1
 kCREATE_NEW_LISTING_CELL = 2
+kHOW_DOES_BYGO_WORK_CELL = 3
 
 
 @app.route('/discovery/default_home_page', methods=['GET'])
@@ -19,7 +20,8 @@ def get_default_home_page_data():
 	layout_data = [
 	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some Games', 'item_type_ids':['4886025126019072', '5076271507701760', '5204331057905664']}, 
 	{'type':kCREATE_NEW_LISTING_CELL},
-	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some More Games', 'item_type_ids':['5204331057905664', '5076271507701760', '4886025126019072']}]
+	{'type':kGALLERY_WITH_TITLE_CELL, 'title':'Play Some More Games', 'item_type_ids':['5204331057905664', '5076271507701760', '4886025126019072']},
+	{'type':kHOW_DOES_BYGO_WORK_CELL}]
 
 	resp = jsonify({'layout_data': layout_data})
 	resp.status_code = 200
