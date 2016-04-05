@@ -47,7 +47,7 @@ def create_order():
 	new_order = search.Document(
 			doc_id=str(o_key.id()),
 			fields=[search.TextField(name='type_id', value=str(type_id)),
-					search.TextField(name='owner_id', value=str(ouser_id)),
+					search.TextField(name='owner_id', value=str(user_id)),
 					search.GeoField(name='location', value=search.GeoPoint(u.home_address.geo_point.lat, u.home_address.geo_point.lon))])
 	index = search.Index(name='Order')
 	index.put(new_order)
@@ -71,6 +71,39 @@ def create_order():
 	resp.status_code = 201
 	logging.info('Order successfully created: %s', data)
 	return resp
+
+
+
+
+# Function to cancel an order
+# curl -X DELETE https://bygo-client-server.appspot.com/order/delete/order_id=<order_id>
+@app.route('/order/cancel/order_id=<int:order_id>', methods=['DELETE'])
+def cancel_order(order_id):
+	# Get the order
+	o = Order.get_by_id(order_id)
+	if o is None:
+		raise InvalidUsage('Order ID does not match any existing Order.', 400)
+
+	# Set listing status to 'canceled'
+	o.status = 'Canceled'
+
+	# Add the updated listing status to the Datastore
+	try:
+		o.put()
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
+
+	# Delete Search App document
+	try:
+		index = search.Index(name='Order')
+		index.delete(str(order_id))
+	except search.Error:
+		raise ServerError('Search API put failed.', 500)
+
+	# Return response
+	logging.info('Order successfully deleted: %d', order_id)
+	return 'Order successfully deleted.', 204
+
 
 
 

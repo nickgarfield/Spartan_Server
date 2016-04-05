@@ -130,6 +130,9 @@ curl -X DELETE http://molten-unison-112921.appspot.com/consistency_check/item_ty
 ### Create Order
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/order.json http://molten-unison-112921.appspot.com/order/create
 
+### Cancel Order
+curl -X DELETE http://molten-unison-112921.appspot.com/order/cancel/order_id=5672889575538688
+
 ### Get Possible Orders
 curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
 
