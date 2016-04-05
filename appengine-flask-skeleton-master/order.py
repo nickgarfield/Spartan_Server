@@ -253,6 +253,54 @@ def offer_listing():
 
 
 
+# Renter accepts an owner's listing offer
+# curl -H "Content-Type: application/json" -X POST -d @test_jsons/accept_offer.json https://bygo-client-server.com/order/accept_offer
+@app.route('/order/accept_offer', methods=['POST'])
+def accept_offer():
+	json_data 	= request.get_json()
+	order_id 	= json_data.get('order_id','')
+	listing_id 	= json_data.get('listing_id', '')
+
+	# Check to make sure the Order exists
+	o = Order.get_by_id(int(order_id))
+	if o is None:
+		raise InvalidUsage('Order does not exist!', status_code=400)
+
+	# Check to make sure the Listing exists
+	l = Listing.get_by_id(int(listing_id))
+	if l is None:
+		raise InvalidUsage('Listing does not exist!', status_code=400)
+	listing_key = ndb.Key('Listing', int(listing_id))
+
+
+	# Set listing status to 'Accepted'
+	o.status = 'Accepted'
+
+	# Empty the list of offers
+	o.offered_listings = []
+
+	# Add the updated listing status to the Datastore
+	try:
+		o.put()
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)
+
+	# Delete Search App document
+	try:
+		index = search.Index(name='Order')
+		index.delete(str(order_id))
+	except search.Error:
+		raise ServerError('Search API delete failed.', 500)
+
+	##################################################################
+	# FIXME:
+	# Create Rent_Event function
+
+	# Return response
+	logging.info('Listing %d successfully accepted for order %d', int(listing_id), int(order_id))
+	return 'Offer successfully accepted.', 200
+
+
 
 
 MaxNumReturn = 200

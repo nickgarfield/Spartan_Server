@@ -143,8 +143,10 @@ curl http://molten-unison-112921.appspot.com/order/user_id=5634387206995968
 curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=5634387206995968
 
 ### Owner Offers their Listing
-curl -X POST -d @test_jsons/offer.json http://molten-unison-112921.appspot.com/order/offer_listing
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/offer.json http://molten-unison-112921.appspot.com/order/offer_listing
 
+### Renter accepts owner's offer
+curl -H "Content-Type: application/json" -X POST -d @test_jsons/accepted_offer.json http://molten-unison-112921.appspot.com/order/accept_offer
 
 
 
