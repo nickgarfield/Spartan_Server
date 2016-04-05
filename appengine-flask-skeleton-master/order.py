@@ -119,6 +119,7 @@ def get_order(order_id):
 	data = {'order_id':str(o.key.id()), 'renter_id':str(o.renter.id()),
 			'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
 			'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
+			'offered_listings':o.offered_listings,
 			'status':o.status, 'date_created':o.date_created}
 
 	# Return response
@@ -148,6 +149,7 @@ def get_orders(user_id):
 		order_data = {'order_id':str(o.key.id()), 'renter_id':str(o.renter.id()),
 					  'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
 					  'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
+					  'offered_listings':o.offered_listings,
 					  'status':o.status, 'date_created':o.date_created}
 		data += [order_data]
 
