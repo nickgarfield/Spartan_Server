@@ -65,13 +65,15 @@ class Order(ndb.Model):
 
 
 class Delivery_Event(ndb.Model):
-	direction 			= ndb.StringProperty(choices=['Pickup', 'Dropoff'])
-	listing 			= ndb.KeyProperty(kind=Listing, required=True)
-	user 				= ndb.KeyProperty(kind=User, required=True)
-	location 			= ndb.StructuredProperty(Delivery_Address, indexed=False)
-	scheduled_time 		= ndb.DateTimeProperty(indexed=False)
-	confirmation_time 	= ndb.DateTimeProperty(indexed=False)
-
+	listing 					= ndb.KeyProperty(kind=Listing, required=True)
+	pickup_user					= ndb.KeyProperty(kind=User, required=True)
+	dropoff_user				= ndb.KeyProperty(kind=User, required=True)
+	pickup_location				= ndb.StructuredProperty(Delivery_Address, indexed=False)
+	dropoff_location			= ndb.StructuredProperty(Delivery_Address, indexed=False)
+	pickup_scheduled_time		= ndb.DateTimeProperty(indexed=False)
+	pickup_confirmation_time	= ndb.DateTimeProperty(indexed=False)
+	dropoff_scheduled_time		= ndb.DateTimeProperty(indexed=False)
+	dropoff_confirmation_time	= ndb.DateTimeProperty(indexed=False)
 
 class Rent_Event(ndb.Model):
 	order 				= ndb.KeyProperty(required=True, kind=Order)
@@ -81,8 +83,6 @@ class Rent_Event(ndb.Model):
 	delivery_fee		= ndb.FloatProperty(indexed=False)
 	total_rental_cost	= ndb.FloatProperty(indexed=False)
 	status 				= ndb.StringProperty(required=True, choices=['Scheduled', 'In Transit', 'Ongoing', 'Concluded', 'Canceled'])
-	delivery_pickup 	= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
-	delivery_dropoff 	= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
-	return_pickup 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
-	return_dropoff 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
+	receive_event		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
+	return_event 		= ndb.KeyProperty(kind=Delivery_Event, indexed=False)
 	date_created		= ndb.DateTimeProperty(auto_now_add=True)
