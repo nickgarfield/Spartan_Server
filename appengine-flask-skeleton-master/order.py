@@ -48,7 +48,7 @@ def create_order():
 
 	# Create Order object
 	o = Order(renter=user_key, item_type=type_key, geo_point=geo_point, rental_duration=int(duration),
-				rental_time_frame=time_frame, rental_fee=int(rental_fee), status='Requested')
+				rental_time_frame=time_frame, rental_fee=rental_fee, status='Requested')
 	o_key = o.put()
 
 	new_order = search.Document(
@@ -72,7 +72,7 @@ def create_order():
 	for matched_listing in owners_listings_ids:
 		send_notification(matched_listing['listing_id'], matched_listing['owner_id'])
 
-	data = {'order_id':str(o_key.id()), 'user_id':str(user_id),	'type_id':str(type_id), 'duration':duration, 'time_frame':time_frame, 'rental_fee':rental_fee, 'status':o.status, 'offered_listings':[]}
+	data = {'order_id':str(o_key.id()), 'renter_id':str(user_id),	'type_id':str(type_id), 'duration':duration, 'time_frame':time_frame, 'rental_fee':rental_fee, 'status':o.status, 'offered_listings':[]}
 
 	resp = jsonify(data)
 	resp.status_code = 201
@@ -121,11 +121,12 @@ def get_order(order_id):
 	# Get the order
 	o = Order.get_by_id(order_id)
 	if o is None:
-		raise InvalidUsage('Order ID does not match any existing Order.', 400)
+		raise InvalidUsage('Order not found.', 400)
+
 
 	data = {'order_id':str(o.key.id()), 'renter_id':str(o.renter.id()),
-			'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
-			'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
+			'type_id':str(o.item_type.id()), 'duration':o.rental_duration,
+			'time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
 			'offered_listings':o.offered_listings,
 			'status':o.status, 'date_created':o.date_created}
 
@@ -140,12 +141,12 @@ def get_order(order_id):
 
 # Function to get a user's orders
 # curl https://bygo-client-server.appspot.com/order/user_id=<int:user_id>
-@app.route('/order/user_id=<int:user_id>', methods=['GET'])
+@app.route('/order/get_users_orders/user_id=<int:user_id>', methods=['GET'])
 def get_orders(user_id):
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 	user_key = ndb.Key('User', int(user_id))
 
 	# qry = Order.query(Order.renter == user_key).order(-Order.date_created)
@@ -154,14 +155,14 @@ def get_orders(user_id):
 	data = []
 	for o in qry.fetch():
 		order_data = {'order_id':str(o.key.id()), 'renter_id':str(o.renter.id()),
-					  'type_id':str(o.item_type.id()), 'rental_duration':o.rental_duration,
-					  'rental_time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
+					  'type_id':str(o.item_type.id()), 'duration':o.rental_duration,
+					  'time_frame':o.rental_time_frame,'rental_fee':o.rental_fee,
 					  'offered_listings':o.offered_listings,
 					  'status':o.status, 'date_created':o.date_created}
 		data += [order_data]
 
 	# Return response
-	resp = jsonify({'order_data':data})
+	resp = jsonify({'orders_data':data})
 	resp.status_code = 200
 	logging.info('User orders: %s', data)
 	return resp
