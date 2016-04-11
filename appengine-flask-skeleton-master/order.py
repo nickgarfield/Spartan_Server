@@ -142,7 +142,7 @@ def get_order(order_id):
 # Function to get a user's orders
 # curl https://bygo-client-server.appspot.com/order/user_id=<int:user_id>
 @app.route('/order/get_users_orders/user_id=<int:user_id>', methods=['GET'])
-def get_orders(user_id):
+def get_users_orders(user_id):
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
 	if u is None:
@@ -172,13 +172,18 @@ def get_orders(user_id):
 
 # Given a user, get his/her listings and check if there are any orders they can fulfill
 # curl https://bygo-client-server.com/order/get_possible/user_id=<int:user_id>
-@app.route('/order/get_possible/user_id=<int:user_id>', methods=['GET'])
-def get_possible_orders(user_id):
+@app.route('/order/get_fillable/user_id=<int:user_id>', methods=['GET'])
+def get_fillable_orders(user_id):
 	# Check to see if the user exists
 	u = User.get_by_id(int(user_id))
 	if u is None:
-		raise InvalidUsage('UserID does not match any existing user', status_code=400)
+		raise InvalidUsage('User not found', status_code=400)
 	user_key = ndb.Key('User', int(user_id))
+
+	if u.home_address is None:
+		resp = jsonify({'matching_orders':[]})
+		resp.status_code = 200
+		return resp
 
 	user_item_type_ids = []
 	qry = Listing.query(Listing.owner==user_key)
@@ -206,14 +211,14 @@ def get_possible_orders(user_id):
 		order_ids = []
 		for order in matched_orders:
 			if int(type_id) == int(order['type_id']):
-				order_ids.append(order['order_id'])
+				order_ids.append(str(order['order_id']))
 
 		data += [{'type_id':type_id, 'order_ids':order_ids}]
 
 	# for order in matched_orders:
 	# 	data += [{'order_id':order['order_id'], 'type_id':order['type_id']}]
 
-	resp = jsonify({'matched_orders':data})
+	resp = jsonify({'matching_orders':data})
 	resp.status_code = 200
 	logging.info('%d matched orders found: %s', num_results, data)
 	return resp
