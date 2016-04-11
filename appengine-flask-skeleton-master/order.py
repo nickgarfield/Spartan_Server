@@ -286,8 +286,18 @@ def accept_offer():
 	listing_key = ndb.Key('Listing', int(listing_id))
 
 
-	# Set listing status to 'Accepted'
+	# Set order status to 'Accepted'
 	o.status = 'Accepted'
+
+	# Set listing renter, status to 'Rented', and delete Search document
+	l.renter = o.renter
+	l.status = 'Rented'
+	try:
+		index = search.Index(name='Listing')
+		index.delete(str(listing_id))
+	except search.Error:
+		raise ServerError('Search API delete failed.', 500)
+
 
 	# Empty the list of offers
 	o.offered_listings = []
@@ -295,6 +305,7 @@ def accept_offer():
 	# Add the updated listing status to the Datastore
 	try:
 		o.put()
+		l.put()
 	except ndb.Error:
 		raise ServerError('Datastore put failed.', 500)
 

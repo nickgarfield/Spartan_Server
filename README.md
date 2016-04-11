@@ -145,7 +145,7 @@ curl http://molten-unison-112921.appspot.com/order/get_possible/user_id=56343872
 ### Owner Offers their Listing
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/offer.json http://molten-unison-112921.appspot.com/order/offer_listing
 
-### Renter accepts owner's offer
+### Renter accepts owner's offer - Rent Event created
 curl -H "Content-Type: application/json" -X POST -d @test_jsons/accepted_offer.json http://molten-unison-112921.appspot.com/order/accept_offer
 
 ### Renter declines owner's offer
