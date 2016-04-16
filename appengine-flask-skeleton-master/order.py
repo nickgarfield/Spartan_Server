@@ -2,7 +2,7 @@ from flask import Flask,request,json,jsonify,Response,abort
 import logging
 from google.appengine.ext import ndb
 from google.appengine.api import search
-from models import User,Listing,Item_Type,Order
+from models import User,Listing,Item_Type,Order,Rent_Event
 from error_handlers import InvalidUsage,ServerError
 
 app = Flask(__name__)
@@ -278,6 +278,7 @@ def accept_offer():
 	o = Order.get_by_id(int(order_id))
 	if o is None:
 		raise InvalidUsage('Order does not exist!', status_code=400)
+	order_key = ndb.Key('Order', int(order_id))
 
 	# Check to make sure the Listing exists
 	l = Listing.get_by_id(int(listing_id))
@@ -302,7 +303,10 @@ def accept_offer():
 	# Empty the list of offers
 	o.offered_listings = []
 
-	# Add the updated listing status to the Datastore
+	# Get the listing's item_type
+	it = l.item_type.get()
+
+	# Add the updated listing and offer status to the Datastore
 	try:
 		o.put()
 		l.put()
@@ -316,12 +320,18 @@ def accept_offer():
 	except search.Error:
 		raise ServerError('Search API delete failed.', 500)
 
-	##################################################################
-	# FIXME:
-	# Create Rent_Event function
+	# Create the Rent_Event
+	re = Rent_Event(order=order_key, owner=l.owner, renter=o.renter, listing=listing_key,
+					delivery_fee=it.delivery_fee, total_rental_cost=o.rental_fee+it.delivery_fee,
+					status='Scheduled')
+
+	try:
+		re.put()
+	except ndb.Error:
+		raise ServerError('Datastore put failed.', 500)	
 
 	# Return response
-	logging.info('Listing %d successfully accepted for order %d', int(listing_id), int(order_id))
+	logging.info('Listing %d successfully accepted for order %d. Rent_Event %d created.', int(listing_id), int(order_id), int(re.key.id()))
 	return 'Offer successfully accepted.', 200
 
 
